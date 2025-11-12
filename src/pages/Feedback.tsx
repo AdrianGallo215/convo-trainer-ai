@@ -1,82 +1,58 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { Home, RotateCcw, TrendingUp, CheckCircle2 } from "lucide-react";
-
-const metrics = [
-  { label: "Confianza", value: 70, color: "bg-primary" },
-  { label: "Fluidez", value: 60, color: "bg-accent" },
-  { label: "Tono", value: 75, color: "bg-success" },
-];
-
-const recommendations = [
-  "Habla más pausado para mejorar la claridad",
-  "Excelente contacto visual durante la conversación",
-  "Evita muletillas repetitivas como 'eh' o 'mmm'",
-  "Tu lenguaje corporal transmite confianza",
-];
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, Home, RotateCcw } from "lucide-react";
 
 const Feedback = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-6">
-      <div className="max-w-4xl mx-auto space-y-8 py-8">
-        <div className="text-center space-y-2">
-          <div className="inline-block p-4 bg-gradient-to-br from-success to-success/80 rounded-2xl shadow-medium mb-4">
-            <CheckCircle2 className="w-16 h-16 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-foreground">¡Sesión completada!</h1>
-          <p className="text-muted-foreground text-lg">Aquí está tu análisis de rendimiento</p>
-        </div>
+    <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6">
+      <div className="max-w-4xl mx-auto space-y-6 py-4 md:py-8">
+        <header className="flex items-center gap-4">
+          <Link to="/escenarios" aria-label="Volver a escenarios">
+            <Button variant="outline" size="icon" aria-label="Volver"><ArrowLeft className="w-4 h-4" aria-hidden="true" /></Button>
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Resultados de tu sesión</h1>
+        </header>
 
-        <Card className="p-8 space-y-6 bg-gradient-card shadow-medium border-border/50">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-6 h-6 text-primary" />
-              <h2 className="text-2xl font-semibold text-foreground">Puntuación</h2>
+        <div className="bg-card rounded-3xl shadow-soft p-6 md:p-8 space-y-8 border border-border/50" role="region" aria-label="Resultados y análisis">
+          <section className="space-y-6" aria-labelledby="scores-heading">
+            <h2 id="scores-heading" className="text-xl font-semibold text-foreground">Puntuación</h2>
+            <div className="space-y-4" role="list" aria-label="Métricas de desempeño">
+              <div className="space-y-2" role="listitem">
+                <div className="flex justify-between text-sm"><span className="text-foreground font-medium">Confianza</span><span className="text-muted-foreground" aria-label="70 por ciento">70%</span></div>
+                <Progress value={70} className="h-3" aria-label="Barra de progreso de confianza" />
+              </div>
+              <div className="space-y-2" role="listitem">
+                <div className="flex justify-between text-sm"><span className="text-foreground font-medium">Fluidez</span><span className="text-muted-foreground" aria-label="60 por ciento">60%</span></div>
+                <Progress value={60} className="h-3" aria-label="Barra de progreso de fluidez" />
+              </div>
+              <div className="space-y-2" role="listitem">
+                <div className="flex justify-between text-sm"><span className="text-foreground font-medium">Tono</span><span className="text-muted-foreground" aria-label="75 por ciento">75%</span></div>
+                <Progress value={75} className="h-3" aria-label="Barra de progreso de tono" />
+              </div>
             </div>
-            {metrics.map((metric) => (
-              <div key={metric.label} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-foreground font-medium">{metric.label}</span>
-                  <span className="text-muted-foreground font-semibold">{metric.value}%</span>
-                </div>
-                <Progress value={metric.value} className="h-3" />
-              </div>
-            ))}
-          </div>
-        </Card>
+          </section>
 
-        <Card className="p-8 space-y-4 bg-gradient-card shadow-medium border-border/50">
-          <h2 className="text-2xl font-semibold text-foreground">Recomendaciones</h2>
-          <div className="space-y-3">
-            {recommendations.map((rec, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/50">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-primary font-semibold text-sm">{index + 1}</span>
-                </div>
-                <p className="text-foreground">{rec}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
+          <section className="space-y-4" aria-labelledby="recommendations-heading">
+            <h2 id="recommendations-heading" className="text-xl font-semibold text-foreground">Recomendaciones</h2>
+            <div className="bg-secondary/30 rounded-xl p-6 space-y-3" role="list" aria-label="Lista de recomendaciones">
+              <p className="text-foreground leading-relaxed" role="listitem">• Habla más pausado.</p>
+              <p className="text-foreground leading-relaxed" role="listitem">• Buen contacto visual.</p>
+              <p className="text-foreground leading-relaxed" role="listitem">• Evita muletillas repetitivas.</p>
+            </div>
+          </section>
 
-        <div className="flex gap-4 justify-center">
-          <Link to="/escenarios" className="flex-1 max-w-xs">
-            <Button className="w-full h-14 text-lg bg-gradient-hero shadow-soft hover:shadow-medium transition-all">
-              <RotateCcw className="w-5 h-5 mr-2" />
-              Repetir sesión
-            </Button>
-          </Link>
-          <Link to="/" className="flex-1 max-w-xs">
-            <Button variant="outline" className="w-full h-14 text-lg border-2 hover:bg-secondary/50">
-              <Home className="w-5 h-5 mr-2" />
-              Inicio
-            </Button>
-          </Link>
+          <nav className="flex flex-col sm:flex-row gap-4 pt-4" aria-label="Acciones disponibles">
+            <Link to="/escenarios" className="flex-1" aria-label="Volver a escenarios para repetir sesión">
+              <Button variant="outline" className="w-full h-12 border-2 hover:bg-secondary/50"><RotateCcw className="w-4 h-4 mr-2" aria-hidden="true" />Repetir sesión</Button>
+            </Link>
+            <Link to="/" className="flex-1" aria-label="Volver a la página de inicio">
+              <Button className="w-full h-12 bg-gradient-hero shadow-soft hover:shadow-medium transition-all"><Home className="w-4 h-4 mr-2" aria-hidden="true" />Inicio</Button>
+            </Link>
+          </nav>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

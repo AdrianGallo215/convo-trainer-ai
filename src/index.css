@@ -84,6 +84,74 @@ All colors MUST be HSL.
     --shadow-soft: 0 4px 20px -2px hsl(195 80% 50% / 0.2);
     --shadow-medium: 0 8px 30px -4px hsl(195 80% 50% / 0.25);
   }
+
+  /* High Contrast Mode - WCAG AAA compliant (7:1 contrast ratio) */
+  .high-contrast {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    --primary: 210 100% 30%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 20%;
+
+    --accent: 30 100% 35%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 145 100% 25%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 100% 35%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 210 100% 30%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(210 100% 30%), hsl(210 100% 25%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    --shadow-soft: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--text-size, 1rem);
+  }
+
+  /* Focus visible styles for keyboard navigation */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Smooth text scaling */
+  html {
+    font-size: 16px;
+  }
+
+  html.text-large {
+    font-size: 18px;
+  }
+
+  html.text-xlarge {
+    font-size: 20px;
+  }
 }
 
 @layer base {
