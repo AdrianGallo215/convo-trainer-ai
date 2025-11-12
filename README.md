@@ -1,73 +1,164 @@
-# Welcome to your Lovable project
+# Aplicación para Entrenamiento de Habilidades Sociales (MVP)
 
-## Project info
+Este proyecto es una versión mínima viable (MVP) desarrollada en Lovable que simula una aplicación para practicar habilidades sociales mediante conversaciones con IA.
 
-**URL**: https://lovable.dev/projects/db3dc3de-f24b-4a7b-8beb-c432759ca4e5
+## Objetivo
 
-## How can I edit this code?
+Validar el flujo de usuario, diseño y usabilidad antes de integrar funciones reales de inteligencia artificial.
 
-There are several ways of editing your application.
+## Flujo de usuario
 
-**Use Lovable**
+1. **Pantalla de Inicio**: Introducción y acceso rápido a configuración
+2. **Selección de Escenario**: Tres tipos de práctica disponibles
+   - Entrevista laboral
+   - Conversación casual
+   - Presentación pública
+3. **Simulación de conversación**: Interacción con IA simulada
+4. **Resultados y feedback**: Análisis de rendimiento con métricas visuales
+5. **Configuración**: Ajustes de micrófono, idioma y modo de voz
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/db3dc3de-f24b-4a7b-8beb-c432759ca4e5) and start prompting.
+## Características del MVP
 
-Changes made via Lovable will be committed automatically to this repo.
+- ✅ Interfaz de usuario completa y responsiva
+- ✅ Navegación fluida entre pantallas
+- ✅ Diseño profesional con sistema de colores coherente
+- ✅ Simulación de respuestas de IA (predefinidas)
+- ✅ Simulación de entrada de voz
+- ✅ Feedback visual con métricas de rendimiento
+- ✅ Sistema de configuración básico
 
-**Use your preferred IDE**
+## Tecnologías utilizadas
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Frontend**: React + TypeScript + Vite
+- **Estilos**: Tailwind CSS con sistema de diseño personalizado
+- **UI Components**: shadcn/ui
+- **Routing**: React Router
+- **Notificaciones**: Sonner
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Próximos pasos: Integración de IA
 
-Follow these steps:
+### 1. Reconocimiento de voz
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+**Opciones recomendadas:**
+- **Web Speech API**: Solución nativa del navegador (gratis, limitada)
+- **Whisper API (OpenAI)**: Alta precisión, múltiples idiomas
+- **Google Cloud Speech-to-Text**: Escalable, soporte multiidioma
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+**Implementación sugerida:**
+```javascript
+// Ejemplo con Web Speech API
+const recognition = new webkitSpeechRecognition();
+recognition.lang = 'es-ES';
+recognition.continuous = false;
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+recognition.onresult = (event) => {
+  const transcript = event.results[0][0].transcript;
+  // Enviar transcript a la IA
+};
 ```
 
-**Edit a file directly in GitHub**
+### 2. IA conversacional
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**Opciones recomendadas:**
+- **OpenAI GPT-4**: Conversaciones naturales y contextuales
+- **Anthropic Claude**: Excelente para diálogos largos
+- **Google Gemini**: Multimodal, análisis de contexto
 
-**Use GitHub Codespaces**
+**Implementación sugerida:**
+```javascript
+// Ejemplo con OpenAI API
+const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${API_KEY}`
+  },
+  body: JSON.stringify({
+    model: 'gpt-4',
+    messages: conversationHistory,
+    temperature: 0.7
+  })
+});
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 3. Análisis emocional y feedback
 
-## What technologies are used for this project?
+**Opciones recomendadas:**
+- **Hume AI**: Análisis emocional de voz
+- **Azure Cognitive Services**: Análisis de sentimiento
+- **Custom NLP**: Análisis de pausas, muletillas, velocidad
 
-This project is built with:
+**Métricas a implementar:**
+- Confianza vocal (volumen, firmeza)
+- Fluidez (pausas, velocidad)
+- Tono emocional (análisis de sentimiento)
+- Claridad (pronunciación, articulación)
+- Uso de muletillas
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 4. Persistencia de datos
 
-## How can I deploy this project?
+**Backend recomendado:**
+- **Supabase**: Base de datos PostgreSQL, autenticación
+- **Firebase**: Tiempo real, fácil configuración
+- **Custom API**: Flask/FastAPI + PostgreSQL
 
-Simply open [Lovable](https://lovable.dev/projects/db3dc3de-f24b-4a7b-8beb-c432759ca4e5) and click on Share -> Publish.
+**Datos a persistir:**
+- Perfil de usuario
+- Historial de sesiones
+- Métricas de progreso
+- Configuraciones personalizadas
 
-## Can I connect a custom domain to my Lovable project?
+## Estructura de archivos
 
-Yes, you can!
+```
+src/
+├── pages/
+│   ├── Index.tsx          # Pantalla de inicio
+│   ├── Escenarios.tsx     # Selección de escenario
+│   ├── Simulacion.tsx     # Práctica interactiva
+│   ├── Feedback.tsx       # Resultados y análisis
+│   └── Configuracion.tsx  # Ajustes de la app
+├── components/
+│   └── ui/                # Componentes de shadcn/ui
+├── index.css              # Sistema de diseño
+└── App.tsx                # Configuración de rutas
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Instalación y desarrollo
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```bash
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+
+# Construir para producción
+npm run build
+```
+
+## Próximas funcionalidades sugeridas
+
+1. **Sistema de autenticación**: Registro y login de usuarios
+2. **Dashboard de progreso**: Visualización de mejoras a lo largo del tiempo
+3. **Más escenarios**: Negociación, resolución de conflictos, networking
+4. **Modo multiplayer**: Práctica con otros usuarios
+5. **Grabación de sesiones**: Reproducir y analizar sesiones anteriores
+6. **Gamificación**: Logros, niveles, desafíos diarios
+
+## Consideraciones de privacidad
+
+Al implementar la versión completa con IA real:
+- Informar a los usuarios sobre el uso de IA
+- Obtener consentimiento para grabación de voz
+- Encriptar datos sensibles
+- Cumplir con GDPR y regulaciones locales
+- Opción de eliminar datos personales
+
+## Autor
+
+Proyecto generado con Lovable AI. Adaptado para desarrollo académico y de prototipo.
+
+## Licencia
+
+Este es un proyecto educativo y de demostración.
