@@ -5,6 +5,8 @@ import { ArrowLeft, Mic, MicOff, Volume2, Send } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useVoiceInteraction } from "@/hooks/useVoiceInteraction";
+import { useGamefication } from "@/hooks/useGamefication";
+import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
@@ -44,11 +46,14 @@ const scenarioData = {
 const Simulacion = () => {
   const { tipo } = useParams<{ tipo: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { saveSession } = useGamefication();
   const [messages, setMessages] = useState<Array<{ role: "user" | "ai"; text: string }>>([]);
   const [responseIndex, setResponseIndex] = useState(0);
   const [hasGreeted, setHasGreeted] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [showSubtitles, setShowSubtitles] = useState(true);
+  const [sessionStartTime] = useState(Date.now());
 
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
 
@@ -125,8 +130,38 @@ const Simulacion = () => {
     }
   };
 
-  const handleFinish = () => {
-    navigate("/feedback");
+  const handleFinish = async () => {
+    if (!user) {
+      navigate("/feedback");
+      return;
+    }
+
+    // Calculate session duration
+    const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+
+    // Generate random scores (simulated for MVP)
+    const confidence = Math.floor(Math.random() * 30) + 60; // 60-90
+    const fluency = Math.floor(Math.random() * 30) + 50; // 50-80
+    const tone = Math.floor(Math.random() * 30) + 65; // 65-95
+
+    // Save session and check achievements
+    const { xpEarned, newAchievements } = await saveSession({
+      userId: user.id,
+      scenarioType: tipo || "casual",
+      confidenceScore: confidence,
+      fluencyScore: fluency,
+      toneScore: tone,
+      durationSeconds,
+    });
+
+    // Navigate to feedback with results
+    navigate("/feedback", {
+      state: {
+        scores: { confidence, fluency, tone },
+        xpEarned,
+        newAchievements,
+      },
+    });
   };
 
   return (

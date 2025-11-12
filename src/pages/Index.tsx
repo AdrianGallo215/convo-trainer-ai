@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Brain, MessageCircle, Target, Settings } from "lucide-react";
+import { Brain, MessageCircle, Target, Settings, LogIn, LogOut, TrendingUp } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
       <div className="container mx-auto px-4 py-8 md:py-16">
@@ -36,15 +39,51 @@ const Index = () => {
           </section>
 
           <nav className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: "0.4s" }} aria-label="Acciones principales">
-            <Link to="/escenarios" aria-label="Ir a selección de escenarios para comenzar">
-              <Button size="lg" className="h-14 px-8 text-lg bg-gradient-hero shadow-medium hover:shadow-soft transition-all">Comenzar práctica</Button>
-            </Link>
-            <div>
-              <Link to="/configuracion" className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2" aria-label="Ir a configuración de audio y accesibilidad">
-                <Settings className="w-4 h-4" aria-hidden="true" />
-                Configuración rápida de micrófono/voz
-              </Link>
-            </div>
+            {user ? (
+              <>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Link to="/escenarios" aria-label="Ir a selección de escenarios">
+                    <Button size="lg" className="h-14 px-8 text-lg bg-gradient-hero shadow-medium hover:shadow-soft transition-all">
+                      Comenzar práctica
+                    </Button>
+                  </Link>
+                  <Link to="/progress" aria-label="Ver mi progreso">
+                    <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-2">
+                      <TrendingUp className="w-5 h-5 mr-2" aria-hidden="true" />
+                      Mi Progreso
+                    </Button>
+                  </Link>
+                </div>
+                <div className="flex gap-4 justify-center">
+                  <Link to="/configuracion" className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2" aria-label="Configuración">
+                    <Settings className="w-4 h-4" aria-hidden="true" />
+                    Configuración
+                  </Link>
+                  <button onClick={() => signOut()} className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2" aria-label="Cerrar sesión">
+                    <LogOut className="w-4 h-4" aria-hidden="true" />
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link to="/escenarios" aria-label="Ir a selección de escenarios">
+                  <Button size="lg" className="h-14 px-8 text-lg bg-gradient-hero shadow-medium hover:shadow-soft transition-all">
+                    Comenzar práctica
+                  </Button>
+                </Link>
+                <div className="flex gap-4 justify-center">
+                  <Link to="/auth" className="text-foreground hover:text-primary transition-colors inline-flex items-center gap-2 font-medium" aria-label="Iniciar sesión para guardar progreso">
+                    <LogIn className="w-4 h-4" aria-hidden="true" />
+                    Iniciar Sesión para Guardar Progreso
+                  </Link>
+                  <Link to="/configuracion" className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2" aria-label="Configuración">
+                    <Settings className="w-4 h-4" aria-hidden="true" />
+                    Configuración
+                  </Link>
+                </div>
+              </>
+            )}
           </nav>
         </div>
       </div>
