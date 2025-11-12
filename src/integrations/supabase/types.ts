@@ -14,16 +14,225 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          icon: string | null
+          id: string
+          requirement_type: string
+          requirement_value: number
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+          icon?: string | null
+          id?: string
+          requirement_type: string
+          requirement_value: number
+          title: string
+          xp_reward?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          icon?: string | null
+          id?: string
+          requirement_type?: string
+          requirement_value?: number
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          last_practice_date: string | null
+          level: number
+          streak_days: number
+          total_sessions: number
+          updated_at: string
+          username: string | null
+          xp: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          last_practice_date?: string | null
+          level?: number
+          streak_days?: number
+          total_sessions?: number
+          updated_at?: string
+          username?: string | null
+          xp?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          last_practice_date?: string | null
+          level?: number
+          streak_days?: number
+          total_sessions?: number
+          updated_at?: string
+          username?: string | null
+          xp?: number
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          completed_at: string
+          confidence_score: number | null
+          created_at: string
+          duration_seconds: number | null
+          fluency_score: number | null
+          id: string
+          scenario_type: string
+          tone_score: number | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          completed_at?: string
+          confidence_score?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          fluency_score?: number | null
+          id?: string
+          scenario_type: string
+          tone_score?: number | null
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          completed_at?: string
+          confidence_score?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          fluency_score?: number | null
+          id?: string
+          scenario_type?: string
+          tone_score?: number | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
+      user_statistics: {
+        Row: {
+          avg_confidence: number | null
+          avg_fluency: number | null
+          avg_tone: number | null
+          best_scenario: string | null
+          id: string
+          total_practice_time: number
+          total_xp_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_confidence?: number | null
+          avg_fluency?: number | null
+          avg_tone?: number | null
+          best_scenario?: string | null
+          id?: string
+          total_practice_time?: number
+          total_xp_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_confidence?: number | null
+          avg_fluency?: number | null
+          avg_tone?: number | null
+          best_scenario?: string | null
+          id?: string
+          total_practice_time?: number
+          total_xp_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      xp_for_level: { Args: { level: number }; Returns: number }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +359,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
