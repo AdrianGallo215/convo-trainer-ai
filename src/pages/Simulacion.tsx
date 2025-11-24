@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Mic, MicOff, Volume2, Send } from "lucide-react";
@@ -56,32 +56,35 @@ const Simulacion = () => {
   const [sessionStartTime] = useState(Date.now());
 
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
+  const speakRef = useRef<(text: string) => void>(() => { });
 
   useEffect(() => {
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
     setShowSubtitles(savedSubtitles);
   }, []);
 
-  const handleUserTranscript = (text: string) => {
+  const handleUserTranscript = useCallback((text: string) => {
     if (!text.trim()) return;
-    
+
     setMessages((prev) => [...prev, { role: "user", text }]);
     toast.success("Respuesta registrada");
-    
+
     // Generate AI response
     setTimeout(() => {
       const aiResponse = scenario.responses[responseIndex % scenario.responses.length];
       setMessages((prev) => [...prev, { role: "ai", text: aiResponse }]);
       setResponseIndex((prev) => prev + 1);
-      
+
       // Speak the AI response
-      speak(aiResponse);
+      if (speakRef.current) {
+        speakRef.current(aiResponse);
+      }
     }, 800);
-  };
+  }, [scenario, responseIndex]);
 
   const handleTextSubmit = () => {
     if (!textInput.trim()) return;
-    
+
     handleUserTranscript(textInput);
     setTextInput("");
   };
@@ -107,11 +110,25 @@ const Simulacion = () => {
     language: 'es-ES',
   });
 
+  // Update ref when speak function changes
+  useEffect(() => {
+    speakRef.current = speak;
+  }, [speak]);
+
   if (!scenario) {
     return <div>Escenario no encontrado</div>;
   }
 
-  // Initial greeting
+  const [hasStarted, setHasStarted] = useState(false);
+
+  const handleStart = () => {
+    setHasStarted(true);
+    setTimeout(() => {
+      speak(scenario.initialMessage);
+    }, 500);
+  };
+
+  /* 
   useEffect(() => {
     if (!hasGreeted && isSupported) {
       setHasGreeted(true);
@@ -120,6 +137,7 @@ const Simulacion = () => {
       }, 500);
     }
   }, [hasGreeted, isSupported, scenario.initialMessage, speak]);
+  */
 
   const handleToggleListening = () => {
     if (isListening) {
@@ -164,6 +182,41 @@ const Simulacion = () => {
     });
   };
 
+  if (!hasStarted) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6 flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md mx-auto p-8 bg-card rounded-3xl shadow-medium border border-border/50">
+          <Avatar className="w-24 h-24 mx-auto bg-gradient-hero shadow-soft">
+            <AvatarFallback className="text-4xl bg-transparent">
+              {scenario.avatar}
+            </AvatarFallback>
+          </Avatar>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold">{scenario.title}</h1>
+            <p className="text-muted-foreground">
+              Haz clic en comenzar para iniciar la simulación de voz.
+            </p>
+          </div>
+          <Button
+            onClick={handleStart}
+            size="lg"
+            className="w-full text-lg h-12 bg-gradient-hero shadow-soft hover:shadow-medium transition-all"
+          >
+            Comenzar Simulación
+          </Button>
+          <div className="flex justify-center">
+            <Link to="/escenarios">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Volver
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6 py-4 md:py-8">
@@ -176,7 +229,7 @@ const Simulacion = () => {
             </Link>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">{scenario.title}</h1>
           </div>
-          
+
           {!isSupported && (
             <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
               Voz no disponible
@@ -235,9 +288,8 @@ const Simulacion = () => {
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${
-                message.role === "user" ? "flex-row-reverse" : ""
-              }`}
+              className={`flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${message.role === "user" ? "flex-row-reverse" : ""
+                }`}
               style={{ animationDelay: `${index * 0.1}s` }}
               role="article"
               aria-label={message.role === "user" ? "Tu mensaje" : "Mensaje del asistente"}
@@ -250,16 +302,26 @@ const Simulacion = () => {
                 </Avatar>
               )}
               <div
-                className={`flex-1 rounded-2xl p-4 shadow-soft backdrop-blur-sm ${
-                  message.role === "user"
-                    ? "bg-primary/90 text-primary-foreground"
-                    : "bg-secondary/80 text-foreground"
-                }`}
+                className={`flex-1 rounded-2xl p-4 shadow-soft backdrop-blur-sm ${message.role === "user"
+                  ? "bg-primary/90 text-primary-foreground"
+                  : "bg-secondary/80 text-foreground"
+                  }`}
               >
                 <p className="leading-relaxed">{message.text}</p>
                 {showSubtitles && (
                   <span className="sr-only" aria-live="polite">{message.text}</span>
                 )}
+                <div className="mt-2 flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-50 hover:opacity-100"
+                    onClick={() => speak(message.text)}
+                    title="Reproducir mensaje"
+                  >
+                    <Volume2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
               {message.role === "user" && (
                 <div className="w-12 h-12 rounded-full bg-accent/80 flex items-center justify-center shadow-soft backdrop-blur-sm" aria-hidden="true">
@@ -302,11 +364,10 @@ const Simulacion = () => {
           <Button
             onClick={handleToggleListening}
             disabled={isSpeaking || !isSupported}
-            className={`flex-1 h-14 text-lg shadow-soft hover:shadow-medium transition-all ${
-              isListening 
-                ? "bg-destructive hover:bg-destructive/90" 
-                : "bg-gradient-hero"
-            }`}
+            className={`flex-1 h-14 text-lg shadow-soft hover:shadow-medium transition-all ${isListening
+              ? "bg-destructive hover:bg-destructive/90"
+              : "bg-gradient-hero"
+              }`}
             aria-label={isListening ? "Detener grabación de voz" : "Iniciar grabación de voz"}
             aria-pressed={isListening}
           >

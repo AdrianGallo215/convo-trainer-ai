@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { useTextToSpeech } from '@/hooks/use-text-to-speech';
 
 interface UseVoiceInteractionProps {
   onTranscript: (text: string) => void;
@@ -18,129 +20,36 @@ interface UseVoiceInteractionReturn {
 
 export const useVoiceInteraction = ({
   onTranscript,
-  language = 'es-ES'
+  language = 'es-ES' // Language param is kept for compatibility but Groq Whisper handles language automatically or can be configured if needed.
 }: UseVoiceInteractionProps): UseVoiceInteractionReturn => {
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [isSupported, setIsSupported] = useState(false);
+  const {
+    isRecording: isListening,
+    transcript,
+    startRecording: startListening,
+    stopRecording: stopListening,
+    error: sttError
+  } = useSpeechToText({ language });
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const synthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const {
+    speak,
+    stop: stopSpeaking,
+    isSpeaking,
+    error: ttsError
+  } = useTextToSpeech();
+
+  const lastProcessedRef = useRef('');
 
   useEffect(() => {
-    // Check browser support
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const supported = !!(SpeechRecognition && window.speechSynthesis);
-    setIsSupported(supported);
-
-    if (!supported) {
-      console.warn('Web Speech API not supported in this browser');
-      return;
+    if (transcript && transcript !== lastProcessedRef.current) {
+      lastProcessedRef.current = transcript;
+      onTranscript(transcript);
+    } else if (!transcript) {
+      lastProcessedRef.current = '';
     }
+  }, [transcript, onTranscript]);
 
-    // Initialize Speech Recognition
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = language;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setTranscript('');
-    };
-
-    recognition.onresult = (event) => {
-      let finalTranscript = '';
-      let interimTranscript = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcriptPart = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcriptPart;
-        } else {
-          interimTranscript += transcriptPart;
-        }
-      }
-
-      setTranscript(finalTranscript || interimTranscript);
-
-      if (finalTranscript) {
-        onTranscript(finalTranscript);
-      }
-    };
-
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, [language, onTranscript]);
-
-  const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening) {
-      try {
-        recognitionRef.current.start();
-      } catch (error) {
-        console.error('Error starting recognition:', error);
-      }
-    }
-  }, [isListening]);
-
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-    }
-  }, [isListening]);
-
-  const speak = useCallback((text: string) => {
-    if (!window.speechSynthesis) return;
-
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language;
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-    };
-
-    utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event);
-      setIsSpeaking(false);
-    };
-
-    synthesisRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  }, [language]);
-
-  const stopSpeaking = useCallback(() => {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-  }, []);
+  if (sttError) console.error('STT Error:', sttError);
+  if (ttsError) console.error('TTS Error:', ttsError);
 
   return {
     isListening,
@@ -150,6 +59,6 @@ export const useVoiceInteraction = ({
     stopListening,
     speak,
     stopSpeaking,
-    isSupported,
+    isSupported: true, // APIs are supported
   };
 };
