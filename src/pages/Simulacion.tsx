@@ -9,6 +9,7 @@ import { useGamefication } from "@/hooks/useGamefication";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const scenarioData = {
   entrevista: {
@@ -223,18 +224,21 @@ const Simulacion = () => {
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/escenarios" aria-label="Volver a escenarios">
-              <Button variant="outline" size="icon" aria-label="Volver">
-                <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              <Button variant="outline" size="icon" aria-label="Volver" className="rounded-full w-12 h-12 border-2">
+                <ArrowLeft className="w-6 h-6" aria-hidden="true" />
               </Button>
             </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{scenario.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{scenario.title}</h1>
           </div>
 
-          {!isSupported && (
-            <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
-              Voz no disponible
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {!isSupported && (
+              <div className="text-sm text-muted-foreground bg-secondary px-3 py-1 rounded-full" role="status" aria-live="polite">
+                Voz no disponible
+              </div>
+            )}
+            <ThemeToggle />
+          </div>
         </header>
 
         <div className="relative bg-card rounded-3xl shadow-medium p-6 md:p-8 space-y-6 border border-border/50 min-h-[60vh]" role="region" aria-label="Área de conversación">
@@ -295,37 +299,37 @@ const Simulacion = () => {
               aria-label={message.role === "user" ? "Tu mensaje" : "Mensaje del asistente"}
             >
               {message.role === "ai" && (
-                <Avatar className="w-12 h-12 bg-gradient-hero shadow-soft" aria-hidden="true">
-                  <AvatarFallback className="text-2xl bg-transparent">
+                <Avatar className="w-12 h-12 md:w-16 md:h-16 bg-gradient-hero shadow-soft border-2 border-background" aria-hidden="true">
+                  <AvatarFallback className="text-2xl md:text-3xl bg-transparent">
                     {scenario.avatar}
                   </AvatarFallback>
                 </Avatar>
               )}
               <div
-                className={`flex-1 rounded-2xl p-4 shadow-soft backdrop-blur-sm ${message.role === "user"
-                  ? "bg-primary/90 text-primary-foreground"
-                  : "bg-secondary/80 text-foreground"
+                className={`flex-1 rounded-3xl p-6 shadow-soft backdrop-blur-sm text-lg md:text-xl leading-relaxed ${message.role === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary/90 text-foreground border-2 border-border/50"
                   }`}
               >
-                <p className="leading-relaxed">{message.text}</p>
+                <p>{message.text}</p>
                 {showSubtitles && (
                   <span className="sr-only" aria-live="polite">{message.text}</span>
                 )}
-                <div className="mt-2 flex justify-end">
+                <div className="mt-3 flex justify-end">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-50 hover:opacity-100"
+                    className="h-8 w-8 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full"
                     onClick={() => speak(message.text)}
                     title="Reproducir mensaje"
                   >
-                    <Volume2 className="h-3 w-3" />
+                    <Volume2 className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
               {message.role === "user" && (
-                <div className="w-12 h-12 rounded-full bg-accent/80 flex items-center justify-center shadow-soft backdrop-blur-sm" aria-hidden="true">
-                  <span className="text-2xl">👤</span>
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-accent flex items-center justify-center shadow-soft border-2 border-background" aria-hidden="true">
+                  <span className="text-2xl md:text-3xl">👤</span>
                 </div>
               )}
             </div>

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Briefcase, MessageCircle, Presentation } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const scenarios = [
   {
@@ -29,18 +30,21 @@ const scenarios = [
 
 const Escenarios = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-6 transition-colors duration-500">
       <div className="max-w-4xl mx-auto space-y-8 py-8">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Selecciona un escenario</h1>
-            <p className="text-muted-foreground mt-2">Elige el tipo de práctica que deseas realizar</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="outline" size="icon" className="rounded-full w-12 h-12 border-2">
+                <ArrowLeft className="w-6 h-6" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-4xl font-bold text-foreground tracking-tight">Selecciona un escenario</h1>
+              <p className="text-muted-foreground mt-2 text-lg">Elige el tipo de práctica que deseas realizar</p>
+            </div>
           </div>
+          <ThemeToggle />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -49,17 +53,17 @@ const Escenarios = () => {
             return (
               <Card
                 key={scenario.id}
-                className="p-6 space-y-4 hover:shadow-medium transition-all duration-300 hover:scale-105 bg-gradient-card border-border/50"
+                className="group p-6 space-y-6 hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-card border-2 border-border/50 hover:border-primary/50"
               >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${scenario.color} flex items-center justify-center shadow-soft`}>
-                  <Icon className="w-8 h-8 text-white" />
+                <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${scenario.color} flex items-center justify-center shadow-soft group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon className="w-10 h-10 text-white" />
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold text-foreground">{scenario.title}</h3>
-                  <p className="text-muted-foreground text-sm">{scenario.description}</p>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">{scenario.title}</h3>
+                  <p className="text-muted-foreground text-base leading-relaxed">{scenario.description}</p>
                 </div>
-                <Link to={`/simulacion/${scenario.id}`}>
-                  <Button className="w-full bg-gradient-hero shadow-soft hover:shadow-medium transition-all">
+                <Link to={`/simulacion/${scenario.id}`} className="block">
+                  <Button className="w-full h-12 text-lg font-medium bg-primary text-primary-foreground shadow-soft hover:shadow-medium transition-all rounded-xl group-hover:bg-primary/90">
                     Practicar
                   </Button>
                 </Link>
