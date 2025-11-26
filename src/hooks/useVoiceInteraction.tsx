@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 import { useTextToSpeech } from '@/hooks/use-text-to-speech';
+import type { AudioMetrics } from '@/types/audioMetrics';
 
 interface UseVoiceInteractionProps {
-  onTranscript: (text: string) => void;
+  onTranscript: (text: string, metrics?: AudioMetrics) => void;
   language?: string;
 }
 
@@ -25,6 +26,7 @@ export const useVoiceInteraction = ({
   const {
     isRecording: isListening,
     transcript,
+    audioMetrics,
     startRecording: startListening,
     stopRecording: stopListening,
     error: sttError
@@ -42,11 +44,11 @@ export const useVoiceInteraction = ({
   useEffect(() => {
     if (transcript && transcript !== lastProcessedRef.current) {
       lastProcessedRef.current = transcript;
-      onTranscript(transcript);
+      onTranscript(transcript, audioMetrics || undefined);
     } else if (!transcript) {
       lastProcessedRef.current = '';
     }
-  }, [transcript, onTranscript]);
+  }, [transcript, audioMetrics, onTranscript]);
 
   if (sttError) console.error('STT Error:', sttError);
   if (ttsError) console.error('TTS Error:', ttsError);
