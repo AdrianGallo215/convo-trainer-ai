@@ -9,9 +9,6 @@ import { useGamefication } from "@/hooks/useGamefication";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useConversation } from "@elevenlabs/react";
-import { send } from "process";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import type { AudioMetrics } from "@/types/audioMetrics";
@@ -67,41 +64,6 @@ const Simulacion = () => {
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
   const speakRef = useRef<(text: string) => void>(() => {});
 
-  const {
-    status,
-    sendUserMessage: sendMessage,
-    //messages: aiMessages,
-    isSpeaking: elIsSpeaking,
-    startSession,
-    //stopSession,
-    endSession: endSession,
-    //audio
-  } = useConversation({
-    onMessage: (msg) => {
-      if (msg.source === "ai") {
-        setMessages((prev) => [...prev, { role: "ai", text: msg.message }]);
-        setResponseIndex((prev) => prev + 1);
-
-        // Reproducir audio ElevenLabs
-        if (msg.message) {
-          const audioBlob = new Blob([msg.message], { type: "audio/mpeg" });
-          const url = URL.createObjectURL(audioBlob);
-          const sound = new Audio(url);
-          sound.play();
-        }
-        /*
-        // Speak the AI response
-        if (speakRef.current) {
-          speakRef.current(msg.message);
-        }
-        */
-      }
-      if (msg.source === "user") {
-        handleUserTranscript(msg.message);
-      }
-    },
-  });
-
   useEffect(() => {
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
     setShowSubtitles(savedSubtitles);
@@ -111,7 +73,7 @@ const Simulacion = () => {
     async (text: string, metrics?: AudioMetrics) => {
       if (!text.trim()) return;
 
-      console.log(text);
+      console.log("📝 Transcripción:", text);
 
       // Calculate response time
       const responseTime = aiFinishTimeRef.current > 0 ? Date.now() - aiFinishTimeRef.current : 0;
@@ -127,7 +89,6 @@ const Simulacion = () => {
       };
       setMessages((prev) => [...prev, newUserMessage]);
       toast.success("Respuesta registrada");
-      sendMessage(text);
 
       // Log audio metrics
       if (updatedMetrics) {
@@ -210,37 +171,24 @@ const Simulacion = () => {
 
   const [hasStarted, setHasStarted] = useState(false);
 
-  const agentIdByScenario: { [key: string]: string } = {
-    entrevista: "agent_0701kb0eptdyebnsvs72wcpdy7nv",
-    //entrevista: "agent_3001kazqvrppejmaazabtnj6vv87",
-    casual: "agent_1801kb0ezy2aeebb1ahwx3txtn3y",
-    presentacion: "agent_8101kb0f45ysefz979b6c9khy4pv",
-  };
-  const handleStart = () => {
+  const handleStart = async () => {
     setHasStarted(true);
-
-    startSession({
-      // Aca hay que poner un agente diferente
-      agentId: agentIdByScenario[tipo as keyof typeof agentIdByScenario],
-      connectionType: "websocket",
-    });
-    /*
-    setTimeout(() => {
-      speak(scenario.initialMessage);
-    }, 500);
-    */
-  };
-
-  /* 
-  useEffect(() => {
-    if (!hasGreeted && isSupported) {
-      setHasGreeted(true);
+    
+    // Request microphone permission
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      toast.success("Micrófono activado");
+      
+      // Speak initial message
       setTimeout(() => {
         speak(scenario.initialMessage);
+        aiFinishTimeRef.current = Date.now();
       }, 500);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      toast.error("No se pudo acceder al micrófono");
     }
-  }, [hasGreeted, isSupported, scenario.initialMessage, speak]);
-  */
+  };
 
   const handleToggleListening = () => {
     if (isListening) {
@@ -406,22 +354,6 @@ const Simulacion = () => {
             </div>
           </header>
 
-          {/* Mensaje inicial */}
-          {/*
-          <div className="flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500" role="article" aria-label="Mensaje del asistente virtual">
-            <Avatar className="w-14 h-14 md:w-16 md:h-16 bg-gradient-hero shadow-soft" aria-hidden="true">
-              <AvatarFallback className="text-2xl md:text-3xl bg-transparent">
-                {scenario.avatar}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 bg-secondary/80 rounded-2xl p-4 shadow-soft backdrop-blur-sm">
-              <p className="text-foreground leading-relaxed">{scenario.initialMessage}</p>
-              {showSubtitles && (
-                <span className="sr-only" aria-live="polite">{scenario.initialMessage}</span>
-              )}
-            </div>
-          </div>
-          */}
           <div
             className="relative bg-card rounded-3xl shadow-medium p-6 md:p-8 space-y-6 border border-border/50 min-h-[60vh]"
             role="region"
@@ -544,34 +476,76 @@ const Simulacion = () => {
             ))}
           </div>
 
-          {/* Campo de entrada de texto alternativo */}
-          <div
-            className="bg-card rounded-2xl shadow-soft p-4 border border-border/50"
-            role="region"
-            aria-label="Entrada de texto alternativa"
-          >
-            <Label htmlFor="text-input" className="text-sm font-medium mb-2 block">
-              Escribe tu respuesta (alternativa al micrófono)
-            </Label>
-            <div className="flex gap-2">
-              <Textarea
-                id="text-input"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Escribe tu respuesta aquí si prefieres no hablar..."
-                className="flex-1 min-h-[80px] resize-none"
-                aria-label="Campo de texto para responder sin usar el micrófono"
-                disabled={isSpeaking}
-              />
+          {/* Controles de voz y texto */}
+          <div className="space-y-4">
+            {/* Campo de entrada de texto alternativo */}
+            <div
+              className="bg-card rounded-2xl shadow-soft p-4 border border-border/50"
+              role="region"
+              aria-label="Entrada de texto alternativa"
+            >
+              <Label htmlFor="text-input" className="text-sm font-medium mb-2 block">
+                Escribe tu respuesta (alternativa al micrófono)
+              </Label>
+              <div className="flex gap-2">
+                <Textarea
+                  id="text-input"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Escribe tu respuesta aquí si prefieres no hablar..."
+                  className="flex-1 min-h-[80px] resize-none"
+                  aria-label="Campo de texto para responder sin usar el micrófono"
+                  disabled={isSpeaking || isListening}
+                />
+                <Button
+                  onClick={handleTextSubmit}
+                  disabled={!textInput.trim() || isSpeaking || isListening}
+                  size="icon"
+                  className="h-[80px] w-12 bg-gradient-hero"
+                  aria-label="Enviar respuesta escrita"
+                >
+                  <Send className="w-5 h-5" aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Botones de control */}
+            <div className="flex justify-center gap-4">
+              {isSupported && (
+                <Button
+                  onClick={handleToggleListening}
+                  disabled={isSpeaking}
+                  size="lg"
+                  className={`w-40 ${
+                    isListening
+                      ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                      : "bg-gradient-hero"
+                  }`}
+                  aria-label={isListening ? "Detener grabación" : "Empezar a hablar"}
+                >
+                  {isListening ? (
+                    <>
+                      <MicOff className="w-5 h-5 mr-2" aria-hidden="true" />
+                      Detener
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-5 h-5 mr-2" aria-hidden="true" />
+                      Hablar
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
-                onClick={handleTextSubmit}
-                disabled={!textInput.trim() || isSpeaking}
-                size="icon"
-                className="h-[80px] w-12 bg-gradient-hero"
-                aria-label="Enviar respuesta escrita"
+                onClick={handleFinish}
+                disabled={messages.length === 0}
+                variant="secondary"
+                size="lg"
+                className="w-40"
+                aria-label="Finalizar simulación"
               >
-                <Send className="w-5 h-5" aria-hidden="true" />
+                Finalizar
               </Button>
             </div>
           </div>
