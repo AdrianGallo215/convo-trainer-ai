@@ -18,7 +18,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 199 89% 48%; /* Calming Blue */
+    --primary: 199 89% 48%;
+    /* Calming Blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -27,7 +28,8 @@ All colors MUST be HSL.
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 168 74% 85%; /* Soft Teal */
+    --accent: 168 74% 85%;
+    /* Soft Teal */
     --accent-foreground: 222 47% 11%;
 
     --success: 142 76% 36%;
@@ -44,7 +46,7 @@ All colors MUST be HSL.
 
     --gradient-hero: linear-gradient(135deg, hsl(199 89% 48%), hsl(168 74% 45%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
-    
+
     --shadow-soft: 0 4px 20px -2px hsl(199 89% 48% / 0.1);
     --shadow-medium: 0 8px 30px -4px hsl(199 89% 48% / 0.15);
   }
@@ -84,7 +86,7 @@ All colors MUST be HSL.
 
     --gradient-hero: linear-gradient(135deg, hsl(199 89% 48%), hsl(168 74% 35%));
     --gradient-card: linear-gradient(145deg, hsl(222 47% 14%), hsl(222 47% 16%));
-    
+
     --shadow-soft: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
     --shadow-medium: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
   }
@@ -92,7 +94,8 @@ All colors MUST be HSL.
   /* High Contrast Mode - WCAG AAA compliant (Strict Black/White/Yellow) */
   .high-contrast {
     --background: 0 0% 0%;
-    --foreground: 60 100% 50%; /* Bright Yellow */
+    --foreground: 60 100% 50%;
+    /* Bright Yellow */
 
     --card: 0 0% 10%;
     --card-foreground: 60 100% 50%;
@@ -126,7 +129,7 @@ All colors MUST be HSL.
 
     --gradient-hero: none;
     --gradient-card: none;
-    
+
     --shadow-soft: none;
     --shadow-medium: none;
   }
@@ -158,6 +161,19 @@ All colors MUST be HSL.
 
   html.text-xlarge {
     font-size: 20px;
+  }
+
+  /* High contrast mode: prevent transparent backgrounds on buttons */
+  .high-contrast button,
+  .high-contrast input:where([type='button']),
+  .high-contrast input:where([type='reset']),
+  .high-contrast input:where([type='submit']) {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .high-contrast button:where([class*='bg-']) {
+    background-color: revert;
   }
 }
 
