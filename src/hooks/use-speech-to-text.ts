@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { groq } from '@/lib/groq';
+import { supabase } from '@/integrations/supabase/client';
 import type { AudioMetrics, TranscriptionResult } from '@/types/audioMetrics';
 
 interface UseSpeechToTextReturn {
@@ -88,21 +88,36 @@ export function useSpeechToText({ language = 'es' }: UseSpeechToTextProps = {}):
 
                 try {
                     setIsRecording(true);
-                    console.log('Sending audio to Groq...');
+                    console.log('Sending audio to Groq via edge function...');
                     
                     // Enhanced prompt to capture filler words
                     const fillerWordsPrompt = language.startsWith('es') 
                         ? 'Transcribe exactamente incluyendo muletillas como: eh, este, mmm, pues, bueno, o sea, entonces, como que'
                         : 'Transcribe exactly including filler words like: um, uh, like, you know, so, well';
                     
-                    const completion = await groq.audio.transcriptions.create({
-                        file: audioFile,
-                        model: 'whisper-large-v3',
-                        response_format: 'json',
-                        language: language.split('-')[0],
-                        prompt: fillerWordsPrompt,
-                        temperature: 0,
-                    });
+                    // Create FormData to send audio file
+                    const formData = new FormData();
+                    formData.append('file', audioFile);
+                    formData.append('language', language);
+                    formData.append('prompt', fillerWordsPrompt);
+
+                    // Call edge function
+                    const response = await fetch(
+                        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/groq-transcribe`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+                            },
+                            body: formData,
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Transcription failed');
+                    }
+
+                    const completion = await response.json();
                     console.log('Groq response:', completion);
                     
                     const transcriptText = completion.text;
