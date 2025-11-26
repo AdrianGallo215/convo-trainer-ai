@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Brain, Settings, LogIn, LogOut, TrendingUp, User as UserIcon, ChevronDown, UserCog } from "lucide-react";
+import { Brain, Settings, LogIn, LogOut, TrendingUp, User as UserIcon, ChevronDown, UserCog, MessageSquare } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -56,12 +56,20 @@ export const Header = () => {
                                         </DropdownMenuItem>
                                     </Link>
                                 ) : (
-                                    <Link to="/progress">
-                                        <DropdownMenuItem className="cursor-pointer gap-2">
-                                            <TrendingUp className="w-4 h-4" />
-                                            <span>Progreso</span>
-                                        </DropdownMenuItem>
-                                    </Link>
+                                    <>
+                                        <Link to="/progress">
+                                            <DropdownMenuItem className="cursor-pointer gap-2">
+                                                <TrendingUp className="w-4 h-4" />
+                                                <span>Progreso</span>
+                                            </DropdownMenuItem>
+                                        </Link>
+                                        <Link to="/previous-conversations">
+                                            <DropdownMenuItem className="cursor-pointer gap-2">
+                                                <MessageSquare className="w-4 h-4" />
+                                                <span>Conversaciones anteriores</span>
+                                            </DropdownMenuItem>
+                                        </Link>
+                                    </>
                                 )}
                                 <Link to="/configuracion">
                                     <DropdownMenuItem className="cursor-pointer gap-2">
