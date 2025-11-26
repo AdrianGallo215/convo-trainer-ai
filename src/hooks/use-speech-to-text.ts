@@ -22,6 +22,9 @@ export function useSpeechToText({ language = 'es' }: UseSpeechToTextProps = {}):
 
     const startRecording = useCallback(async () => {
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Media devices API not supported in this browser or context (requires HTTPS).');
+            }
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const mediaRecorder = new MediaRecorder(stream);
             mediaRecorderRef.current = mediaRecorder;
