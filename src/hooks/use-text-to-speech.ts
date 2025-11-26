@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { elevenLabs } from '@/lib/elevenlabs';
 
 interface UseTextToSpeechReturn {
     speak: (text: string) => Promise<void>;
@@ -33,33 +33,23 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
             setError(null);
 
             console.log('Attempting to speak text:', text.substring(0, 20) + '...');
+            if (!elevenLabs) {
+                throw new Error('ElevenLabs client not initialized');
+            }
             
-            // Call edge function for TTS
-            const { data, error: functionError } = await supabase.functions.invoke(
-                'elevenlabs-tts',
-                {
-                    body: { 
-                        text,
-                        voiceId: '1SM7GgM6IMuvQlz2BwM3' // Rachel voice
-                    }
-                }
-            );
+            const audioStream = await elevenLabs.textToSpeech.convert('1SM7GgM6IMuvQlz2BwM3', { // Default voice ID (Rachel)
+            //const audioStream = await elevenLabs.textToSpeech.convert('JBFqnCBsd6RMkjVDRZzb', { // Default voice ID (Rachel)
+                text,
+                model_id: 'eleven_multilingual_v2',
+                output_format: 'mp3_44100_128',
+            });
 
-            if (functionError) {
-                throw new Error(functionError.message || 'Failed to generate speech');
+            const chunks: Uint8Array[] = [];
+            for await (const chunk of audioStream) {
+                chunks.push(chunk);
             }
 
-            if (!data?.audioBase64) {
-                throw new Error('No audio data received');
-            }
-
-            // Convert base64 to blob
-            const binaryString = atob(data.audioBase64);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+            const audioBlob = new Blob(chunks as any[], { type: 'audio/mpeg' });
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
             audioRef.current = audio;
@@ -80,7 +70,7 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
             await audio.play();
         } catch (err) {
             console.error('TTS error:', err);
-            setError(err instanceof Error ? err.message : 'Failed to generate speech');
+            setError('Failed to generate speech');
             setIsSpeaking(false);
             audioRef.current = null;
         }
