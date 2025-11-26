@@ -9,6 +9,8 @@ import { useGamefication } from "@/hooks/useGamefication";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useConversation } from "@elevenlabs/react";
+import { send } from "process";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +67,39 @@ const Simulacion = () => {
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
   const speakRef = useRef<(text: string) => void>(() => {});
 
+  const {
+    status,
+    sendUserMessage: sendMessage,
+    //messages: aiMessages,
+    isSpeaking: elIsSpeaking,
+    startSession,
+    //stopSession,
+    endSession: endSession,
+    //audio
+  } = useConversation({
+    onMessage: (msg) => {
+      if (msg.source === "ai") { 
+        setMessages((prev) => [...prev, { role: "ai", text: msg.message }]);
+        setResponseIndex((prev) => prev + 1);
+
+        // Reproducir audio ElevenLabs
+        if (msg.message) {
+          const audioBlob = new Blob([msg.message], { type: "audio/mpeg" });
+          const url = URL.createObjectURL(audioBlob);
+          const sound = new Audio(url);
+          sound.play();
+        }
+        /*
+        // Speak the AI response
+        if (speakRef.current) {
+          speakRef.current(msg.message);
+        }
+        */
+      }
+    },
+  });
+
+
   useEffect(() => {
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
     setShowSubtitles(savedSubtitles);
@@ -88,7 +123,8 @@ const Simulacion = () => {
       };
       setMessages((prev) => [...prev, newUserMessage]);
       toast.success("Respuesta registrada");
-
+      sendMessage(text);
+      
       // Log audio metrics
       if (updatedMetrics) {
         console.log("=== MÉTRICAS DE AUDIO ===");
@@ -170,11 +206,27 @@ const Simulacion = () => {
 
   const [hasStarted, setHasStarted] = useState(false);
 
+  const agentIdByScenario: { [key: string]: string } = {
+    entrevista: "agent_0701kb0eptdyebnsvs72wcpdy7nv",
+    //entrevista: "agent_3001kazqvrppejmaazabtnj6vv87",
+    casual: "agent_1801kb0ezy2aeebb1ahwx3txtn3y",
+    presentacion: "agent_8101kb0f45ysefz979b6c9khy4pv",
+  };
   const handleStart = () => {
     setHasStarted(true);
+    
+    startSession(
+      {
+        // Aca hay que poner un agente diferente
+        agentId: agentIdByScenario[tipo as keyof typeof agentIdByScenario],
+        connectionType: 'websocket',
+      }
+    );
+    /*
     setTimeout(() => {
       speak(scenario.initialMessage);
     }, 500);
+    */
   };
 
   /* 
@@ -352,6 +404,22 @@ const Simulacion = () => {
             </div>
           </header>
 
+          {/* Mensaje inicial */}
+          {/*
+          <div className="flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500" role="article" aria-label="Mensaje del asistente virtual">
+            <Avatar className="w-14 h-14 md:w-16 md:h-16 bg-gradient-hero shadow-soft" aria-hidden="true">
+              <AvatarFallback className="text-2xl md:text-3xl bg-transparent">
+                {scenario.avatar}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 bg-secondary/80 rounded-2xl p-4 shadow-soft backdrop-blur-sm">
+              <p className="text-foreground leading-relaxed">{scenario.initialMessage}</p>
+              {showSubtitles && (
+                <span className="sr-only" aria-live="polite">{scenario.initialMessage}</span>
+              )}
+            </div>
+          </div>
+          */}
           <div
             className="relative bg-card rounded-3xl shadow-medium p-6 md:p-8 space-y-6 border border-border/50 min-h-[60vh]"
             role="region"
