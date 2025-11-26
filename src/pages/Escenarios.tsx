@@ -53,12 +53,12 @@ const Escenarios = () => {
             return (
               <Card
                 key={scenario.id}
-                className="group p-6 space-y-6 hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-card border-2 border-border/50 hover:border-primary/50"
+                className="group p-6 flex flex-col h-full space-y-6 hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-card border-2 border-border/50 hover:border-primary/50"
               >
                 <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${scenario.color} flex items-center justify-center shadow-soft group-hover:scale-110 transition-transform duration-300`}>
                   <Icon className="w-10 h-10 text-white" />
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1">
                   <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">{scenario.title}</h3>
                   <p className="text-muted-foreground text-base leading-relaxed">{scenario.description}</p>
                 </div>
