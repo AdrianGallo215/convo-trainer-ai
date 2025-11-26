@@ -575,15 +575,15 @@ const Simulacion = () => {
               </Button>
             </div>
           </div>
-          <Button
-            onClick={handleFinish}
-            variant="outline"
-            className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
-            aria-label="Finalizar sesión y ver resultados"
-          >
-            Finalizar
-          </Button>
         </div>
+        <Button
+          onClick={handleFinish}
+          variant="outline"
+          className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
+          aria-label="Finalizar sesión y ver resultados"
+        >
+          Finalizar
+        </Button>
       </main>
     </div>
   );
