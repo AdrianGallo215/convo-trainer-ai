@@ -52,7 +52,9 @@ const Simulacion = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { saveSession } = useGamefication();
-  const [messages, setMessages] = useState<Array<{ role: "user" | "ai"; text: string; audioMetrics?: AudioMetrics }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: "user" | "ai"; text: string; audioMetrics?: AudioMetrics }>>(
+    [],
+  );
   const [responseIndex, setResponseIndex] = useState(0);
   const [hasGreeted, setHasGreeted] = useState(false);
   const [textInput, setTextInput] = useState("");
@@ -74,19 +76,19 @@ const Simulacion = () => {
 
       // Calculate response time
       const responseTime = aiFinishTimeRef.current > 0 ? Date.now() - aiFinishTimeRef.current : 0;
-      
+
       // Update metrics with response time
       const updatedMetrics = metrics ? { ...metrics, responseTimeMs: responseTime } : undefined;
 
       // Add user message with audio metrics
-      const newUserMessage: { role: "user" | "ai"; text: string; audioMetrics?: AudioMetrics } = { 
-        role: "user", 
+      const newUserMessage: { role: "user" | "ai"; text: string; audioMetrics?: AudioMetrics } = {
+        role: "user",
         text,
-        audioMetrics: updatedMetrics
+        audioMetrics: updatedMetrics,
       };
       setMessages((prev) => [...prev, newUserMessage]);
       toast.success("Respuesta registrada");
-      
+
       // Log audio metrics
       if (updatedMetrics) {
         console.log("=== MÉTRICAS DE AUDIO ===");
@@ -95,7 +97,7 @@ const Simulacion = () => {
         console.log(`Palabras por minuto: ${updatedMetrics.wordsPerMinute}`);
         console.log(`Volumen promedio: ${updatedMetrics.averageVolume.toFixed(3)}`);
         console.log(`Silencio: ${updatedMetrics.silencePercentage.toFixed(1)}%`);
-        console.log(`Muletillas: ${updatedMetrics.fillerWords.join(', ')} (${updatedMetrics.fillerWordCount})`);
+        console.log(`Muletillas: ${updatedMetrics.fillerWords.join(", ")} (${updatedMetrics.fillerWordCount})`);
         console.log(`Tiempo de respuesta: ${updatedMetrics.responseTimeMs}ms`);
         console.log("========================");
       }
@@ -124,7 +126,7 @@ const Simulacion = () => {
         if (speakRef.current) {
           speakRef.current(aiResponse);
           // Mark when AI finishes speaking (approximate based on text length)
-          const estimatedSpeakTime = aiResponse.split(' ').length * 300; // ~300ms per word
+          const estimatedSpeakTime = aiResponse.split(" ").length * 300; // ~300ms per word
           setTimeout(() => {
             aiFinishTimeRef.current = Date.now();
           }, estimatedSpeakTime);
@@ -232,7 +234,7 @@ const Simulacion = () => {
             fluency = data.fluency || fluency;
             tone = data.tone || tone;
             recommendations = data.recommendations || recommendations;
-            
+
             // Log explanations to console
             if (data.explanations) {
               console.log("=== ANÁLISIS DE GROQ ===");
@@ -453,7 +455,7 @@ const Simulacion = () => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full"
-                      onClick={() => console.log(message.text)}
+                      onClick={() => speak(message.text)}
                       title="Reproducir mensaje"
                     >
                       <Volume2 className="h-5 w-5" />
