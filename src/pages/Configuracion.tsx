@@ -18,7 +18,7 @@ const Configuracion = () => {
     const savedHighContrast = localStorage.getItem("highContrast") === "true";
     const savedTextSize = localStorage.getItem("textSize") || "normal";
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
-    
+
     setHighContrast(savedHighContrast);
     setTextSize(savedTextSize);
     setSubtitles(savedSubtitles);
@@ -75,17 +75,18 @@ const Configuracion = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">Configuración</h1>
         </header>
 
-        <div className="bg-card rounded-3xl shadow-soft p-6 md:p-8 space-y-6 border border-border/50" role="region" aria-label="Configuración de la aplicación">
+        <div
+          className="bg-card rounded-3xl shadow-soft p-6 md:p-8 space-y-6 border border-border/50"
+          role="region"
+          aria-label="Configuración de la aplicación"
+        >
           <section className="space-y-4">
             <h2 className="text-lg font-semibold text-foreground">Interacción</h2>
-            
-            <div className="flex items-center justify-between">
-              <Label htmlFor="modo-voz" className="text-base font-medium">Modo de voz</Label>
-              <Switch id="modo-voz" checked={voz} onCheckedChange={setVoz} aria-label="Activar o desactivar modo de voz" />
-            </div>
 
             <div className="space-y-2">
-              <Label htmlFor="idioma" className="text-base font-medium">Idioma</Label>
+              <Label htmlFor="idioma" className="text-base font-medium">
+                Idioma
+              </Label>
               <Select value={idioma} onValueChange={setIdioma}>
                 <SelectTrigger id="idioma" className="w-full" aria-label="Seleccionar idioma">
                   <SelectValue />
@@ -100,17 +101,26 @@ const Configuracion = () => {
 
           <section className="space-y-4 pt-4 border-t border-border">
             <h2 className="text-lg font-semibold text-foreground">Accesibilidad</h2>
-            
+
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="high-contrast" className="text-base font-medium">Alto contraste</Label>
+                <Label htmlFor="high-contrast" className="text-base font-medium">
+                  Alto contraste
+                </Label>
                 <p className="text-sm text-muted-foreground">Aumenta el contraste para mejor legibilidad</p>
               </div>
-              <Switch id="high-contrast" checked={highContrast} onCheckedChange={handleHighContrastChange} aria-label="Activar o desactivar modo de alto contraste" />
+              <Switch
+                id="high-contrast"
+                checked={highContrast}
+                onCheckedChange={handleHighContrastChange}
+                aria-label="Activar o desactivar modo de alto contraste"
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="text-size" className="text-base font-medium">Tamaño del texto</Label>
+              <Label htmlFor="text-size" className="text-base font-medium">
+                Tamaño del texto
+              </Label>
               <Select value={textSize} onValueChange={handleTextSizeChange}>
                 <SelectTrigger id="text-size" className="w-full" aria-label="Seleccionar tamaño de texto">
                   <SelectValue />
@@ -125,14 +135,25 @@ const Configuracion = () => {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="subtitles" className="text-base font-medium">Subtítulos</Label>
+                <Label htmlFor="subtitles" className="text-base font-medium">
+                  Subtítulos
+                </Label>
                 <p className="text-sm text-muted-foreground">Mostrar subtítulos durante las conversaciones</p>
               </div>
-              <Switch id="subtitles" checked={subtitles} onCheckedChange={handleSubtitlesChange} aria-label="Activar o desactivar subtítulos" />
+              <Switch
+                id="subtitles"
+                checked={subtitles}
+                onCheckedChange={handleSubtitlesChange}
+                aria-label="Activar o desactivar subtítulos"
+              />
             </div>
           </section>
 
-          <Button onClick={handleGuardar} className="w-full h-12 bg-gradient-hero text-lg shadow-soft hover:shadow-medium transition-all" aria-label="Guardar toda la configuración">
+          <Button
+            onClick={handleGuardar}
+            className="w-full h-12 bg-gradient-hero text-lg shadow-soft hover:shadow-medium transition-all"
+            aria-label="Guardar toda la configuración"
+          >
             Guardar configuración
           </Button>
         </div>
