@@ -10,7 +10,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useConversation } from "@elevenlabs/react";
-import { send } from "process";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
