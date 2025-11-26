@@ -15,6 +15,7 @@ import Progress from "./pages/Progress";
 import Moderator from "./pages/Moderator";
 import Psychologist from "./pages/Psychologist";
 import Configuracion from "./pages/Configuracion";
+import PreviousConversations from "./pages/PreviousConversations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/simulacion/:tipo" element={<ProtectedRoute><Simulacion /></ProtectedRoute>} />
               <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
               <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+              <Route path="/previous-conversations" element={<ProtectedRoute><PreviousConversations /></ProtectedRoute>} />
               <Route path="/moderator" element={<ProtectedRoute><Moderator /></ProtectedRoute>} />
               <Route path="/psychologist" element={<ProtectedRoute><Psychologist /></ProtectedRoute>} />
               <Route path="/configuracion" element={<Configuracion />} />
