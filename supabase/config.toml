@@ -1,1 +1,7 @@
 project_id = "byhmpiakzzebmghfrdfi"
+
+[functions.groq-chat]
+verify_jwt = false
+
+[functions.groq-analyze]
+verify_jwt = false

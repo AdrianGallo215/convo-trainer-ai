@@ -8,120 +8,130 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Calming Light Mode - Soft Teals and Blues */
     --background: 210 40% 98%;
-    --foreground: 215 25% 15%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 195 85% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 199 89% 48%;
+    /* Calming Blue */
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 195 70% 95%;
-    --secondary-foreground: 195 85% 25%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 30% 92%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 15 85% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 168 74% 85%;
+    /* Soft Teal */
+    --accent-foreground: 222 47% 11%;
 
-    --success: 145 70% 45%;
-    --success-foreground: 0 0% 100%;
+    --success: 142 76% 36%;
+    --success-foreground: 355.7 100% 97.3%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 215 20% 88%;
-    --input: 215 20% 88%;
-    --ring: 195 85% 45%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 199 89% 48%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --gradient-hero: linear-gradient(135deg, hsl(195 85% 45%), hsl(195 70% 55%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 99%));
-    --shadow-soft: 0 4px 20px -2px hsl(195 85% 45% / 0.1);
-    --shadow-medium: 0 8px 30px -4px hsl(195 85% 45% / 0.15);
+    --gradient-hero: linear-gradient(135deg, hsl(199 89% 48%), hsl(168 74% 45%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
+
+    --shadow-soft: 0 4px 20px -2px hsl(199 89% 48% / 0.1);
+    --shadow-medium: 0 8px 30px -4px hsl(199 89% 48% / 0.15);
   }
 
   .dark {
-    --background: 215 30% 10%;
+    /* Deep Dark Mode - Comfortable Slate/Blue */
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
-    --card: 215 28% 14%;
+    --card: 222 47% 14%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 215 28% 14%;
+    --popover: 222 47% 14%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 195 80% 50%;
-    --primary-foreground: 215 30% 10%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 222 47% 11%;
 
-    --secondary: 215 25% 20%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 215 25% 20%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 15 80% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 168 74% 25%;
+    --accent-foreground: 210 40% 98%;
 
-    --success: 145 65% 50%;
-    --success-foreground: 0 0% 100%;
+    --success: 142 70% 50%;
+    --success-foreground: 144 70% 10%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 195 80% 50%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 199 89% 48%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(195 80% 50%), hsl(195 70% 45%));
-    --gradient-card: linear-gradient(145deg, hsl(215 28% 14%), hsl(215 25% 16%));
-    --shadow-soft: 0 4px 20px -2px hsl(195 80% 50% / 0.2);
-    --shadow-medium: 0 8px 30px -4px hsl(195 80% 50% / 0.25);
-  }
+    --gradient-hero: linear-gradient(135deg, hsl(199 89% 48%), hsl(168 74% 35%));
+    --gradient-card: linear-gradient(145deg, hsl(222 47% 14%), hsl(222 47% 16%));
 
-  /* High Contrast Mode - WCAG AAA compliant (7:1 contrast ratio) */
-  .high-contrast {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-
-    --primary: 210 100% 30%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 0 0% 90%;
-    --muted-foreground: 0 0% 20%;
-
-    --accent: 30 100% 35%;
-    --accent-foreground: 0 0% 100%;
-
-    --success: 145 100% 25%;
-    --success-foreground: 0 0% 100%;
-
-    --destructive: 0 100% 35%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 0%;
-    --input: 0 0% 0%;
-    --ring: 210 100% 30%;
-
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 30%), hsl(210 100% 25%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
     --shadow-soft: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
     --shadow-medium: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
+  }
+
+  /* High Contrast Mode - WCAG AAA compliant (Strict Black/White/Yellow) */
+  .high-contrast {
+    --background: 0 0% 0%;
+    --foreground: 60 100% 50%;
+    /* Bright Yellow */
+
+    --card: 0 0% 10%;
+    --card-foreground: 60 100% 50%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 60 100% 50%;
+
+    --primary: 60 100% 50%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 60 100% 50%;
+
+    --muted: 0 0% 20%;
+    --muted-foreground: 60 100% 50%;
+
+    --accent: 60 100% 50%;
+    --accent-foreground: 0 0% 0%;
+
+    --success: 120 100% 50%;
+    --success-foreground: 0 0% 0%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+
+    --border: 60 100% 50%;
+    --input: 60 100% 50%;
+    --ring: 60 100% 50%;
+
+    --radius: 0;
+
+    --gradient-hero: none;
+    --gradient-card: none;
+
+    --shadow-soft: none;
+    --shadow-medium: none;
   }
 }
 
@@ -151,6 +161,19 @@ All colors MUST be HSL.
 
   html.text-xlarge {
     font-size: 20px;
+  }
+
+  /* High contrast mode: prevent transparent backgrounds on buttons */
+  .high-contrast button,
+  .high-contrast input:where([type='button']),
+  .high-contrast input:where([type='reset']),
+  .high-contrast input:where([type='submit']) {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .high-contrast button:where([class*='bg-']) {
+    background-color: revert;
   }
 }
 
