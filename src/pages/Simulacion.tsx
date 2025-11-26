@@ -410,7 +410,7 @@ const Simulacion = () => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full"
-                      onClick={() => speak(message.text)}
+                      onClick={() => console.log(message.text)}
                       title="Reproducir mensaje"
                     >
                       <Volume2 className="h-5 w-5" />
