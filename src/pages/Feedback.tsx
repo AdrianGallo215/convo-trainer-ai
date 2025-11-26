@@ -21,14 +21,20 @@ const Feedback = () => {
     scores?: { confidence: number; fluency: number; tone: number };
     xpEarned?: number;
     newAchievements?: Achievement[];
+    recommendations?: string[];
   } | null;
 
   const [showAchievements, setShowAchievements] = useState(false);
 
-  // Default scores if no state (for guest users)
+  // Default scores and recommendations if no state (for guest users)
   const scores = state?.scores || { confidence: 70, fluency: 60, tone: 75 };
   const xpEarned = state?.xpEarned || 0;
   const newAchievements = state?.newAchievements || [];
+  const recommendations = state?.recommendations || [
+    "Practica mantener contacto visual durante las conversaciones",
+    "Trabaja en reducir muletillas y pausas innecesarias",
+    "Ajusta tu tono según el contexto de la conversación"
+  ];
 
   useEffect(() => {
     if (newAchievements.length > 0) {
@@ -114,9 +120,11 @@ const Feedback = () => {
           <section className="space-y-4" aria-labelledby="recommendations-heading">
             <h2 id="recommendations-heading" className="text-xl font-semibold text-foreground">Recomendaciones</h2>
             <div className="bg-secondary/30 rounded-xl p-6 space-y-3" role="list" aria-label="Lista de recomendaciones">
-              <p className="text-foreground leading-relaxed" role="listitem">• Habla más pausado.</p>
-              <p className="text-foreground leading-relaxed" role="listitem">• Buen contacto visual.</p>
-              <p className="text-foreground leading-relaxed" role="listitem">• Evita muletillas repetitivas.</p>
+              {recommendations.map((recommendation, index) => (
+                <p key={index} className="text-foreground leading-relaxed" role="listitem">
+                  • {recommendation}
+                </p>
+              ))}
             </div>
           </section>
 

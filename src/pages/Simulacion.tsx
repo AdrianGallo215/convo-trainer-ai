@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
+import { supabase } from "@/integrations/supabase/client";
 
 const scenarioData = {
   entrevista: {
@@ -65,24 +66,43 @@ const Simulacion = () => {
     setShowSubtitles(savedSubtitles);
   }, []);
 
-  const handleUserTranscript = useCallback((text: string) => {
+  const handleUserTranscript = useCallback(async (text: string) => {
     if (!text.trim()) return;
 
-    setMessages((prev) => [...prev, { role: "user", text }]);
+    // Add user message
+    const newUserMessage: { role: "user" | "ai"; text: string } = { role: "user", text };
+    setMessages((prev) => [...prev, newUserMessage]);
     toast.success("Respuesta registrada");
 
-    // Generate AI response
-    setTimeout(() => {
-      const aiResponse = scenario.responses[responseIndex % scenario.responses.length];
-      setMessages((prev) => [...prev, { role: "ai", text: aiResponse }]);
+    try {
+      // Get AI response from Groq
+      const allMessages = [...messages, newUserMessage].map(msg => ({
+        role: msg.role === "user" ? "user" : "assistant",
+        content: msg.text
+      }));
+
+      const { data, error } = await supabase.functions.invoke('groq-chat', {
+        body: {
+          messages: allMessages,
+          scenarioType: tipo
+        }
+      });
+
+      if (error) throw error;
+
+      const aiResponse = data.response;
+      setMessages((prev) => [...prev, { role: "ai" as const, text: aiResponse }]);
       setResponseIndex((prev) => prev + 1);
 
       // Speak the AI response
       if (speakRef.current) {
         speakRef.current(aiResponse);
       }
-    }, 800);
-  }, [scenario, responseIndex]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      toast.error("Error al obtener respuesta de la IA");
+    }
+  }, [messages, tipo]);
 
   const handleTextSubmit = () => {
     if (!textInput.trim()) return;
@@ -151,37 +171,83 @@ const Simulacion = () => {
   };
 
   const handleFinish = async () => {
-    if (!user) {
-      navigate("/feedback");
-      return;
+    try {
+      toast.loading("Analizando conversación...");
+
+      // Calculate session duration
+      const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+
+      // Analyze conversation with Groq if user is logged in and there are messages
+      let confidence = 70;
+      let fluency = 65;
+      let tone = 70;
+      let recommendations: string[] = [
+        "Practica mantener contacto visual durante las conversaciones",
+        "Trabaja en reducir muletillas y pausas innecesarias",
+        "Ajusta tu tono según el contexto de la conversación"
+      ];
+
+      if (user && messages.length > 0) {
+        try {
+          const conversationMessages = messages.map(msg => ({
+            role: msg.role === "user" ? "user" : "assistant",
+            content: msg.text
+          }));
+
+          const { data, error } = await supabase.functions.invoke('groq-analyze', {
+            body: {
+              messages: conversationMessages,
+              scenarioType: tipo
+            }
+          });
+
+          if (!error && data) {
+            confidence = data.confidence || confidence;
+            fluency = data.fluency || fluency;
+            tone = data.tone || tone;
+            recommendations = data.recommendations || recommendations;
+          }
+        } catch (error) {
+          console.error('Error analyzing conversation:', error);
+          toast.error("Error al analizar la conversación, usando valores predeterminados");
+        }
+      }
+
+      toast.dismiss();
+
+      if (user) {
+        // Save session and check achievements
+        const { xpEarned, newAchievements } = await saveSession({
+          userId: user.id,
+          scenarioType: tipo || "casual",
+          confidenceScore: confidence,
+          fluencyScore: fluency,
+          toneScore: tone,
+          durationSeconds,
+        });
+
+        // Navigate to feedback with results
+        navigate("/feedback", {
+          state: {
+            scores: { confidence, fluency, tone },
+            xpEarned,
+            newAchievements,
+            recommendations,
+          },
+        });
+      } else {
+        // Guest user
+        navigate("/feedback", {
+          state: {
+            scores: { confidence, fluency, tone },
+            recommendations,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error finishing session:', error);
+      toast.error("Error al finalizar la sesión");
     }
-
-    // Calculate session duration
-    const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-
-    // Generate random scores (simulated for MVP)
-    const confidence = Math.floor(Math.random() * 30) + 60; // 60-90
-    const fluency = Math.floor(Math.random() * 30) + 50; // 50-80
-    const tone = Math.floor(Math.random() * 30) + 65; // 65-95
-
-    // Save session and check achievements
-    const { xpEarned, newAchievements } = await saveSession({
-      userId: user.id,
-      scenarioType: tipo || "casual",
-      confidenceScore: confidence,
-      fluencyScore: fluency,
-      toneScore: tone,
-      durationSeconds,
-    });
-
-    // Navigate to feedback with results
-    navigate("/feedback", {
-      state: {
-        scores: { confidence, fluency, tone },
-        xpEarned,
-        newAchievements,
-      },
-    });
   };
 
   if (!hasStarted) {
