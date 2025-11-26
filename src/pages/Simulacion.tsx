@@ -78,7 +78,7 @@ const Simulacion = () => {
     //audio
   } = useConversation({
     onMessage: (msg) => {
-      if (msg.source === "ai") { 
+      if (msg.source === "ai") {
         setMessages((prev) => [...prev, { role: "ai", text: msg.message }]);
         setResponseIndex((prev) => prev + 1);
 
@@ -96,9 +96,11 @@ const Simulacion = () => {
         }
         */
       }
+      if (msg.source === "user") {
+        handleUserTranscript(msg.message);
+      }
     },
   });
-
 
   useEffect(() => {
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
@@ -108,6 +110,8 @@ const Simulacion = () => {
   const handleUserTranscript = useCallback(
     async (text: string, metrics?: AudioMetrics) => {
       if (!text.trim()) return;
+
+      console.log(text);
 
       // Calculate response time
       const responseTime = aiFinishTimeRef.current > 0 ? Date.now() - aiFinishTimeRef.current : 0;
@@ -124,7 +128,7 @@ const Simulacion = () => {
       setMessages((prev) => [...prev, newUserMessage]);
       toast.success("Respuesta registrada");
       sendMessage(text);
-      
+
       // Log audio metrics
       if (updatedMetrics) {
         console.log("=== MÉTRICAS DE AUDIO ===");
@@ -214,14 +218,12 @@ const Simulacion = () => {
   };
   const handleStart = () => {
     setHasStarted(true);
-    
-    startSession(
-      {
-        // Aca hay que poner un agente diferente
-        agentId: agentIdByScenario[tipo as keyof typeof agentIdByScenario],
-        connectionType: 'websocket',
-      }
-    );
+
+    startSession({
+      // Aca hay que poner un agente diferente
+      agentId: agentIdByScenario[tipo as keyof typeof agentIdByScenario],
+      connectionType: "websocket",
+    });
     /*
     setTimeout(() => {
       speak(scenario.initialMessage);
@@ -466,7 +468,6 @@ const Simulacion = () => {
             </div>
 
             {/* Transcripción en tiempo real */}
-            {console.log("isListening: ", isListening, " transcript: ", transcript)}
             {isListening && transcript && (
               <div
                 className="flex items-start gap-4 flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300"
@@ -573,38 +574,6 @@ const Simulacion = () => {
                 <Send className="w-5 h-5" aria-hidden="true" />
               </Button>
             </div>
-          </div>
-
-          <div className="flex gap-4" role="group" aria-label="Controles de la conversación">
-            <Button
-              onClick={handleToggleListening}
-              disabled={isSpeaking || !isSupported}
-              className={`flex-1 h-14 text-lg shadow-soft hover:shadow-medium transition-all ${
-                isListening ? "bg-destructive hover:bg-destructive/90" : "bg-gradient-hero"
-              }`}
-              aria-label={isListening ? "Detener grabación de voz" : "Iniciar grabación de voz"}
-              aria-pressed={isListening}
-            >
-              {isListening ? (
-                <>
-                  <MicOff className="w-5 h-5 mr-2 animate-pulse" aria-hidden="true" />
-                  Detener
-                </>
-              ) : (
-                <>
-                  <Mic className="w-5 h-5 mr-2" aria-hidden="true" />
-                  Hablar
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={handleFinish}
-              variant="outline"
-              className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
-              aria-label="Finalizar sesión y ver resultados"
-            >
-              Finalizar
-            </Button>
           </div>
         </div>
       </main>
