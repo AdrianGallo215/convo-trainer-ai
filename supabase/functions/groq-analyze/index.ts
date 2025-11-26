@@ -18,6 +18,28 @@ serve(async (req) => {
       throw new Error('GROQ_API_KEY is not configured');
     }
 
+    // Extraer métricas de audio de los mensajes del usuario
+    const audioMetricsData = messages
+      .filter((msg: any) => msg.role === 'user' && msg.audioMetrics)
+      .map((msg: any) => msg.audioMetrics);
+
+    // Calcular promedios de métricas
+    let avgWPM = 0;
+    let avgVolume = 0;
+    let avgSilence = 0;
+    let totalFillerWords = 0;
+    let avgResponseTime = 0;
+    let allFillerWords: string[] = [];
+
+    if (audioMetricsData.length > 0) {
+      avgWPM = audioMetricsData.reduce((sum: number, m: any) => sum + m.wordsPerMinute, 0) / audioMetricsData.length;
+      avgVolume = audioMetricsData.reduce((sum: number, m: any) => sum + m.averageVolume, 0) / audioMetricsData.length;
+      avgSilence = audioMetricsData.reduce((sum: number, m: any) => sum + m.silencePercentage, 0) / audioMetricsData.length;
+      totalFillerWords = audioMetricsData.reduce((sum: number, m: any) => sum + m.fillerWordCount, 0);
+      avgResponseTime = audioMetricsData.reduce((sum: number, m: any) => sum + m.responseTimeMs, 0) / audioMetricsData.length;
+      allFillerWords = audioMetricsData.flatMap((m: any) => m.fillerWords);
+    }
+
     // Construir el historial de conversación para análisis
     const conversationHistory = messages
       .map((msg: { role: string; content: string }) => 
@@ -25,17 +47,39 @@ serve(async (req) => {
       )
       .join('\n\n');
 
-    const analysisPrompt = `Analiza la siguiente conversación de práctica de habilidades sociales (tipo: ${scenarioType}) y proporciona puntuaciones detalladas:
+    const metricsInfo = audioMetricsData.length > 0 ? `
+
+MÉTRICAS DE VOZ CAPTURADAS:
+- Velocidad de habla promedio: ${Math.round(avgWPM)} palabras por minuto (ideal: 120-150)
+- Volumen promedio: ${(avgVolume * 100).toFixed(1)}% (0-100%)
+- Porcentaje de silencio: ${avgSilence.toFixed(1)}%
+- Muletillas detectadas: ${totalFillerWords} (${[...new Set(allFillerWords)].join(', ')})
+- Tiempo de respuesta promedio: ${(avgResponseTime / 1000).toFixed(1)} segundos
+
+Estas métricas son DATOS REALES de audio capturados durante la conversación.` : '';
+
+    const analysisPrompt = `Analiza la siguiente conversación de práctica de habilidades sociales (tipo: ${scenarioType}) y proporciona puntuaciones detalladas basadas tanto en el CONTENIDO como en las MÉTRICAS DE VOZ REALES:
 
 CONVERSACIÓN:
-${conversationHistory}
+${conversationHistory}${metricsInfo}
 
-Por favor, analiza la conversación y proporciona puntuaciones del 0-100 para:
-1. CONFIANZA (confidence): Evalúa qué tan seguro y decidido sonó el usuario en sus respuestas
-2. FLUIDEZ (fluency): Evalúa qué tan natural y sin pausas/titubeos fueron las respuestas
-3. TONO (tone): Evalúa qué tan apropiado fue el tono para el contexto (profesional en entrevista, amigable en casual, etc.)
+Por favor, analiza la conversación usando TANTO el contenido textual COMO las métricas de voz reales y proporciona puntuaciones del 0-100 para:
 
-Además, proporciona 3 recomendaciones específicas para mejorar y una EXPLICACIÓN DETALLADA de por qué se asignó cada puntuación.
+1. CONFIANZA (confidence): 
+   - Evalúa seguridad en el contenido (50%)
+   - Volumen de voz (25%): Volumen bajo indica inseguridad
+   - Muletillas (25%): Muchas muletillas reducen confianza
+
+2. FLUIDEZ (fluency): 
+   - Naturalidad del contenido (40%)
+   - Velocidad de habla (30%): 120-150 WPM es óptimo en español
+   - Porcentaje de silencio (30%): >25% indica problemas de fluidez
+
+3. TONO (tone): 
+   - Apropiado para el contexto (70%)
+   - Tiempo de respuesta (30%): <2s es reactivo, >4s puede indicar inseguridad
+
+Además, proporciona 3 recomendaciones ESPECÍFICAS basadas en las métricas reales observadas y una EXPLICACIÓN DETALLADA que MENCIONE LAS MÉTRICAS ESPECÍFICAS de por qué se asignó cada puntuación.
 
 Responde ÚNICAMENTE en el siguiente formato JSON (sin texto adicional):
 {
@@ -43,14 +87,14 @@ Responde ÚNICAMENTE en el siguiente formato JSON (sin texto adicional):
   "fluency": <número 0-100>,
   "tone": <número 0-100>,
   "explanations": {
-    "confidence": "Explicación detallada de por qué se dio este puntaje de confianza",
-    "fluency": "Explicación detallada de por qué se dio este puntaje de fluidez",
-    "tone": "Explicación detallada de por qué se dio este puntaje de tono"
+    "confidence": "Explicación que mencione el volumen, muletillas detectadas y contenido",
+    "fluency": "Explicación que mencione WPM, silencios y naturalidad del habla",
+    "tone": "Explicación que mencione tiempo de respuesta y apropiación al contexto"
   },
   "recommendations": [
-    "Recomendación 1 específica y accionable",
-    "Recomendación 2 específica y accionable",
-    "Recomendación 3 específica y accionable"
+    "Recomendación 1 basada en métricas específicas observadas",
+    "Recomendación 2 basada en métricas específicas observadas",
+    "Recomendación 3 basada en métricas específicas observadas"
   ]
 }`;
 
@@ -69,7 +113,7 @@ Responde ÚNICAMENTE en el siguiente formato JSON (sin texto adicional):
         ],
         model: "llama-3.3-70b-versatile",
         temperature: 0.3,
-        max_tokens: 800,
+        max_tokens: 1200,
         response_format: { type: "json_object" }
       }),
     });

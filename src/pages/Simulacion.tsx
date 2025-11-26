@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
+import type { AudioMetrics } from "@/types/audioMetrics";
 
 const scenarioData = {
   entrevista: {
@@ -51,12 +52,13 @@ const Simulacion = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { saveSession } = useGamefication();
-  const [messages, setMessages] = useState<Array<{ role: "user" | "ai"; text: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: "user" | "ai"; text: string; audioMetrics?: AudioMetrics }>>([]);
   const [responseIndex, setResponseIndex] = useState(0);
   const [hasGreeted, setHasGreeted] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [showSubtitles, setShowSubtitles] = useState(true);
   const [sessionStartTime] = useState(Date.now());
+  const aiFinishTimeRef = useRef<number>(0);
 
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
   const speakRef = useRef<(text: string) => void>(() => {});
@@ -67,13 +69,36 @@ const Simulacion = () => {
   }, []);
 
   const handleUserTranscript = useCallback(
-    async (text: string) => {
+    async (text: string, metrics?: AudioMetrics) => {
       if (!text.trim()) return;
 
-      // Add user message
-      const newUserMessage: { role: "user" | "ai"; text: string } = { role: "user", text };
+      // Calculate response time
+      const responseTime = aiFinishTimeRef.current > 0 ? Date.now() - aiFinishTimeRef.current : 0;
+      
+      // Update metrics with response time
+      const updatedMetrics = metrics ? { ...metrics, responseTimeMs: responseTime } : undefined;
+
+      // Add user message with audio metrics
+      const newUserMessage: { role: "user" | "ai"; text: string; audioMetrics?: AudioMetrics } = { 
+        role: "user", 
+        text,
+        audioMetrics: updatedMetrics
+      };
       setMessages((prev) => [...prev, newUserMessage]);
       toast.success("Respuesta registrada");
+      
+      // Log audio metrics
+      if (updatedMetrics) {
+        console.log("=== MÉTRICAS DE AUDIO ===");
+        console.log(`Duración: ${updatedMetrics.durationMs}ms`);
+        console.log(`Palabras: ${updatedMetrics.wordCount}`);
+        console.log(`Palabras por minuto: ${updatedMetrics.wordsPerMinute}`);
+        console.log(`Volumen promedio: ${updatedMetrics.averageVolume.toFixed(3)}`);
+        console.log(`Silencio: ${updatedMetrics.silencePercentage.toFixed(1)}%`);
+        console.log(`Muletillas: ${updatedMetrics.fillerWords.join(', ')} (${updatedMetrics.fillerWordCount})`);
+        console.log(`Tiempo de respuesta: ${updatedMetrics.responseTimeMs}ms`);
+        console.log("========================");
+      }
 
       try {
         // Get AI response from Groq
@@ -98,6 +123,11 @@ const Simulacion = () => {
         // Speak the AI response
         if (speakRef.current) {
           speakRef.current(aiResponse);
+          // Mark when AI finishes speaking (approximate based on text length)
+          const estimatedSpeakTime = aiResponse.split(' ').length * 300; // ~300ms per word
+          setTimeout(() => {
+            aiFinishTimeRef.current = Date.now();
+          }, estimatedSpeakTime);
         }
       } catch (error) {
         console.error("Error getting AI response:", error);
@@ -187,6 +217,7 @@ const Simulacion = () => {
           const conversationMessages = messages.map((msg) => ({
             role: msg.role === "user" ? "user" : "assistant",
             content: msg.text,
+            audioMetrics: msg.audioMetrics || undefined,
           }));
 
           const { data, error } = await supabase.functions.invoke("groq-analyze", {
