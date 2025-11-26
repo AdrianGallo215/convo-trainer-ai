@@ -201,6 +201,18 @@ const Simulacion = () => {
             fluency = data.fluency || fluency;
             tone = data.tone || tone;
             recommendations = data.recommendations || recommendations;
+            
+            // Log explanations to console
+            if (data.explanations) {
+              console.log("=== ANÁLISIS DE GROQ ===");
+              console.log(`\n📊 CONFIANZA: ${confidence}/100`);
+              console.log(`Explicación: ${data.explanations.confidence}`);
+              console.log(`\n💬 FLUIDEZ: ${fluency}/100`);
+              console.log(`Explicación: ${data.explanations.fluency}`);
+              console.log(`\n🎯 TONO: ${tone}/100`);
+              console.log(`Explicación: ${data.explanations.tone}`);
+              console.log("\n======================");
+            }
           }
         } catch (error) {
           console.error("Error analyzing conversation:", error);

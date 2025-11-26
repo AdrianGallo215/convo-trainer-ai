@@ -35,13 +35,18 @@ Por favor, analiza la conversación y proporciona puntuaciones del 0-100 para:
 2. FLUIDEZ (fluency): Evalúa qué tan natural y sin pausas/titubeos fueron las respuestas
 3. TONO (tone): Evalúa qué tan apropiado fue el tono para el contexto (profesional en entrevista, amigable en casual, etc.)
 
-Además, proporciona 3 recomendaciones específicas para mejorar.
+Además, proporciona 3 recomendaciones específicas para mejorar y una EXPLICACIÓN DETALLADA de por qué se asignó cada puntuación.
 
 Responde ÚNICAMENTE en el siguiente formato JSON (sin texto adicional):
 {
   "confidence": <número 0-100>,
   "fluency": <número 0-100>,
   "tone": <número 0-100>,
+  "explanations": {
+    "confidence": "Explicación detallada de por qué se dio este puntaje de confianza",
+    "fluency": "Explicación detallada de por qué se dio este puntaje de fluidez",
+    "tone": "Explicación detallada de por qué se dio este puntaje de tono"
+  },
   "recommendations": [
     "Recomendación 1 específica y accionable",
     "Recomendación 2 específica y accionable",
@@ -92,7 +97,8 @@ Responde ÚNICAMENTE en el siguiente formato JSON (sin texto adicional):
       typeof analysis.confidence !== 'number' ||
       typeof analysis.fluency !== 'number' ||
       typeof analysis.tone !== 'number' ||
-      !Array.isArray(analysis.recommendations)
+      !Array.isArray(analysis.recommendations) ||
+      !analysis.explanations
     ) {
       throw new Error('Invalid analysis format from AI');
     }
