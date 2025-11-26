@@ -11,6 +11,7 @@ import Escenarios from "./pages/Escenarios";
 import Simulacion from "./pages/Simulacion";
 import Feedback from "./pages/Feedback";
 import Progress from "./pages/Progress";
+import Moderator from "./pages/Moderator";
 import Configuracion from "./pages/Configuracion";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/simulacion/:tipo" element={<ProtectedRoute><Simulacion /></ProtectedRoute>} />
             <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
             <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+            <Route path="/moderator" element={<ProtectedRoute><Moderator /></ProtectedRoute>} />
             <Route path="/configuracion" element={<Configuracion />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

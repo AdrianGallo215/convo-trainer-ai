@@ -36,8 +36,9 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
             if (!elevenLabs) {
                 throw new Error('ElevenLabs client not initialized');
             }
-
-            const audioStream = await elevenLabs.textToSpeech.convert('JBFqnCBsd6RMkjVDRZzb', { // Default voice ID (Rachel)
+            
+            const audioStream = await elevenLabs.textToSpeech.convert('1SM7GgM6IMuvQlz2BwM3', { // Default voice ID (Rachel)
+            //const audioStream = await elevenLabs.textToSpeech.convert('JBFqnCBsd6RMkjVDRZzb', { // Default voice ID (Rachel)
                 text,
                 model_id: 'eleven_multilingual_v2',
                 output_format: 'mp3_44100_128',

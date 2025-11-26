@@ -9,18 +9,14 @@ import { useGamefication } from "@/hooks/useGamefication";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useConversation } from "@elevenlabs/react";
-import { send } from "process";
+// Importación de ElevenLabs
+import { useConversation } from "@11labs/react";
 
 const scenarioData = {
   entrevista: {
     title: "Entrevista laboral",
     initialMessage: "¿Por qué estás interesado en este puesto?",
-    responses: [
-      "Esa es una excelente motivación. Cuéntame más sobre tu experiencia previa.",
-      "Interesante perspectiva. ¿Qué fortalezas crees que aportas al equipo?",
-      "Muy bien. ¿Cómo manejas situaciones de presión?",
-    ],
+    responses: [], // En modo ElevenLabs, las respuestas vienen de la IA real
     avatar: "💼",
   },
   casual: {
@@ -50,49 +46,43 @@ const Simulacion = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { saveSession } = useGamefication();
+  
+  // Estado
   const [messages, setMessages] = useState<Array<{ role: "user" | "ai"; text: string }>>([]);
   const [responseIndex, setResponseIndex] = useState(0);
-  const [hasGreeted, setHasGreeted] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [showSubtitles, setShowSubtitles] = useState(true);
   const [sessionStartTime] = useState(Date.now());
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Determinar si usamos ElevenLabs (Solo para entrevista)
+  const isElevenLabsMode = tipo === "entrevista";
 
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
   const speakRef = useRef<(text: string) => void>(() => { });
 
-  const {
-    status,
-    sendUserMessage: sendMessage,
-    //messages: aiMessages,
-    isSpeaking: elIsSpeaking,
-    startSession,
-    //stopSession,
-    endSession: endSession,
-    //audio
-  } = useConversation({
-    onMessage: (msg) => {
-      if (msg.source === "ai") { 
-        setMessages((prev) => [...prev, { role: "ai", text: msg.message }]);
-        setResponseIndex((prev) => prev + 1);
-
-        // Reproducir audio ElevenLabs
-        if (msg.message) {
-          const audioBlob = new Blob([msg.message], { type: "audio/mpeg" });
-          const url = URL.createObjectURL(audioBlob);
-          const sound = new Audio(url);
-          sound.play();
-        }
-        /*
-        // Speak the AI response
-        if (speakRef.current) {
-          speakRef.current(msg.message);
-        }
-        */
+  // --- CONFIGURACIÓN ELEVENLABS ---
+  const conversation = useConversation({
+    onConnect: () => console.log("Connected to ElevenLabs"),
+    onDisconnect: () => console.log("Disconnected from ElevenLabs"),
+    onMessage: (message: any) => {
+      // Cuando ElevenLabs envía un mensaje (texto de lo que está hablando)
+      // Nota: Verifica si 'message' es string o objeto según tu versión del SDK
+      const text = typeof message === 'string' ? message : message.message || message.text;
+      if (text) {
+        setMessages((prev) => [...prev, { role: "ai", text }]);
       }
+    },
+    onError: (error) => {
+      console.error("ElevenLabs Error:", error);
+      toast.error("Error de conexión con el agente de voz");
     },
   });
 
+  const { status: elStatus, isSpeaking: elIsSpeaking } = conversation;
+  const isElevenLabsConnected = elStatus === "connected";
 
+  // --- CONFIGURACIÓN STANDARD (NO-ELEVENLABS) ---
   useEffect(() => {
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
     setShowSubtitles(savedSubtitles);
@@ -102,29 +92,30 @@ const Simulacion = () => {
     if (!text.trim()) return;
 
     setMessages((prev) => [...prev, { role: "user", text }]);
+    
+    // Si estamos en modo ElevenLabs, no generamos respuesta simulada aquí,
+    // ElevenLabs responderá automáticamente por audio y onMessage.
+    if (isElevenLabsMode) {
+      toast.success("Respuesta enviada al agente");
+      return; 
+    }
+
     toast.success("Respuesta registrada");
 
-    sendMessage(text);
-    // Generate AI response
+    // Lógica Standard: Respuesta Simulada
     setTimeout(() => {
-      //sendMessage(text)
-      
-      //const aiResponse = scenario.responses[responseIndex % scenario.responses.length];
-      /*
+      const aiResponse = scenario.responses[responseIndex % scenario.responses.length];
       setMessages((prev) => [...prev, { role: "ai", text: aiResponse }]);
       setResponseIndex((prev) => prev + 1);
 
-      // Speak the AI response
       if (speakRef.current) {
         speakRef.current(aiResponse);
       }
-      */
     }, 800);
-  }, [scenario, responseIndex]);
+  }, [scenario, responseIndex, isElevenLabsMode]);
 
   const handleTextSubmit = () => {
     if (!textInput.trim()) return;
-
     handleUserTranscript(textInput);
     setTextInput("");
   };
@@ -136,9 +127,10 @@ const Simulacion = () => {
     }
   };
 
+  // Hook Standard (siempre se inicializa pero se usa condicionalmente)
   const {
-    isListening,
-    isSpeaking,
+    isListening: stdIsListening,
+    isSpeaking: stdIsSpeaking,
     transcript,
     startListening,
     stopListening,
@@ -150,77 +142,78 @@ const Simulacion = () => {
     language: 'es-ES',
   });
 
-  // Update ref when speak function changes
+  // Update ref
   useEffect(() => {
     speakRef.current = speak;
   }, [speak]);
 
-  if (!scenario) {
-    return <div>Escenario no encontrado</div>;
-  }
+  // --- LÓGICA DE CONTROL ---
 
-  const [hasStarted, setHasStarted] = useState(false);
+  // Unificamos estados de UI
+  const isListening = isElevenLabsMode ? isElevenLabsConnected : stdIsListening;
+  const isSpeaking = isElevenLabsMode ? elIsSpeaking : stdIsSpeaking;
 
-  const agentIdByScenario: { [key: string]: string } = {
-    entrevista: "agent_0701kb0eptdyebnsvs72wcpdy7nv",
-    //entrevista: "agent_3001kazqvrppejmaazabtnj6vv87",
-    casual: "agent_1801kb0ezy2aeebb1ahwx3txtn3y",
-    presentacion: "agent_8101kb0f45ysefz979b6c9khy4pv",
-  };
-  const handleStart = () => {
+  const handleStart = async () => {
     setHasStarted(true);
     
-    startSession(
-      {
-        // Aca hay que poner un agente diferente
-        agentId: agentIdByScenario[tipo as keyof typeof agentIdByScenario],
-        connectionType: 'websocket',
+    if (isElevenLabsMode) {
+      try {
+        // Solicitar permisos de micrófono primero explícitamente si es necesario
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Iniciar sesión ElevenLabs
+        await conversation.startSession({
+          agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!, // Asegúrate de tener esta variable de entorno
+        });
+      } catch (error) {
+        console.error("Error starting EL session:", error);
+        toast.error("No se pudo iniciar la entrevista con IA");
       }
-    );
-    /*
-    setTimeout(() => {
-      speak(scenario.initialMessage);
-    }, 500);
-    */
-  };
-
-  /* 
-  useEffect(() => {
-    if (!hasGreeted && isSupported) {
-      setHasGreeted(true);
+    } else {
+      // Modo Standard
       setTimeout(() => {
         speak(scenario.initialMessage);
       }, 500);
     }
-  }, [hasGreeted, isSupported, scenario.initialMessage, speak]);
-  */
+  };
 
-  const handleToggleListening = () => {
-    if (isListening) {
-      stopListening();
+  const handleToggleListening = async () => {
+    if (isElevenLabsMode) {
+      // En modo ElevenLabs, el botón controla la conexión completa
+      if (isElevenLabsConnected) {
+        await conversation.endSession();
+      } else {
+        await conversation.startSession({
+          agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
+        });
+      }
     } else {
-      stopSpeaking();
-      startListening();
+      // Modo Standard
+      if (isListening) {
+        stopListening();
+      } else {
+        stopSpeaking();
+        startListening();
+      }
     }
   };
 
   const handleFinish = async () => {
+    // Si estamos en ElevenLabs, cerramos la sesión
+    if (isElevenLabsMode && isElevenLabsConnected) {
+      await conversation.endSession();
+    }
+
     if (!user) {
-      endSession(); 
-      stop 
       navigate("/feedback");
       return;
     }
 
-    // Calculate session duration
     const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+    const confidence = Math.floor(Math.random() * 30) + 60; 
+    const fluency = Math.floor(Math.random() * 30) + 50; 
+    const tone = Math.floor(Math.random() * 30) + 65; 
 
-    // Generate random scores (simulated for MVP)
-    const confidence = Math.floor(Math.random() * 30) + 60; // 60-90
-    const fluency = Math.floor(Math.random() * 30) + 50; // 50-80
-    const tone = Math.floor(Math.random() * 30) + 65; // 65-95
-
-    // Save session and check achievements
     const { xpEarned, newAchievements } = await saveSession({
       userId: user.id,
       scenarioType: tipo || "casual",
@@ -230,7 +223,6 @@ const Simulacion = () => {
       durationSeconds,
     });
 
-    // Navigate to feedback with results
     navigate("/feedback", {
       state: {
         scores: { confidence, fluency, tone },
@@ -240,6 +232,11 @@ const Simulacion = () => {
     });
   };
 
+  if (!scenario) {
+    return <div>Escenario no encontrado</div>;
+  }
+
+  // PANTALLA DE INICIO
   if (!hasStarted) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6 flex items-center justify-center">
@@ -252,7 +249,9 @@ const Simulacion = () => {
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">{scenario.title}</h1>
             <p className="text-muted-foreground">
-              Haz clic en comenzar para iniciar la simulación de voz.
+              {isElevenLabsMode 
+                ? "Inicia la entrevista con IA avanzada." 
+                : "Haz clic en comenzar para iniciar la simulación de voz."}
             </p>
           </div>
           <Button
@@ -275,6 +274,7 @@ const Simulacion = () => {
     );
   }
 
+  // PANTALLA DE CHAT
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6 py-4 md:py-8">
@@ -288,7 +288,8 @@ const Simulacion = () => {
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">{scenario.title}</h1>
           </div>
 
-          {!isSupported && (
+          {/* Mostrar estado solo si NO es ElevenLabs o si es supported */}
+          {!isElevenLabsMode && !isSupported && (
             <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
               Voz no disponible
             </div>
@@ -312,8 +313,7 @@ const Simulacion = () => {
             )}
           </div>
 
-          {/* Mensaje inicial */}
-          {/*
+          {/* Mensaje inicial (Static for Standard, Dynamic/Hidden for EL until start) */}
           <div className="flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500" role="article" aria-label="Mensaje del asistente virtual">
             <Avatar className="w-14 h-14 md:w-16 md:h-16 bg-gradient-hero shadow-soft" aria-hidden="true">
               <AvatarFallback className="text-2xl md:text-3xl bg-transparent">
@@ -327,19 +327,15 @@ const Simulacion = () => {
               )}
             </div>
           </div>
-          */}
 
-          {/* Transcripción en tiempo real */}
-          {isListening && transcript && (
+          {/* Transcripción en tiempo real (Solo para Standard Mode, EL maneja su propio audio/stream) */}
+          {!isElevenLabsMode && isListening && transcript && (
             <div className="flex items-start gap-4 flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300" role="article" aria-label="Tu respuesta en progreso" aria-live="polite">
               <div className="w-12 h-12 rounded-full bg-accent/80 flex items-center justify-center shadow-soft backdrop-blur-sm" aria-hidden="true">
                 <span className="text-2xl">👤</span>
               </div>
               <div className="flex-1 rounded-2xl p-4 shadow-soft bg-primary/80 text-primary-foreground backdrop-blur-sm border-2 border-primary">
                 <p className="italic opacity-80">{transcript}...</p>
-                {showSubtitles && (
-                  <span className="sr-only">{transcript}</span>
-                )}
               </div>
             </div>
           )}
@@ -352,7 +348,6 @@ const Simulacion = () => {
                 }`}
               style={{ animationDelay: `${index * 0.1}s` }}
               role="article"
-              aria-label={message.role === "user" ? "Tu mensaje" : "Mensaje del asistente"}
             >
               {message.role === "ai" && (
                 <Avatar className="w-12 h-12 bg-gradient-hero shadow-soft" aria-hidden="true">
@@ -368,20 +363,20 @@ const Simulacion = () => {
                   }`}
               >
                 <p className="leading-relaxed">{message.text}</p>
-                {showSubtitles && (
-                  <span className="sr-only" aria-live="polite">{message.text}</span>
+                {/* Botón de repetir audio: Solo standard. EL no soporta replay de texto fácilmente sin volver a generar */}
+                {!isElevenLabsMode && message.role === "ai" && (
+                  <div className="mt-2 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-50 hover:opacity-100"
+                      onClick={() => speak(message.text)}
+                      title="Reproducir mensaje"
+                    >
+                      <Volume2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 )}
-                <div className="mt-2 flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-50 hover:opacity-100"
-                    onClick={() => speak(message.text)}
-                    title="Reproducir mensaje"
-                  >
-                    <Volume2 className="h-3 w-3" />
-                  </Button>
-                </div>
               </div>
               {message.role === "user" && (
                 <div className="w-12 h-12 rounded-full bg-accent/80 flex items-center justify-center shadow-soft backdrop-blur-sm" aria-hidden="true">
@@ -392,10 +387,10 @@ const Simulacion = () => {
           ))}
         </div>
 
-        {/* Campo de entrada de texto alternativo */}
+        {/* Input Texto: Deshabilitado o Oculto en modo ElevenLabs si se prefiere full voz, pero lo dejo activo */}
         <div className="bg-card rounded-2xl shadow-soft p-4 border border-border/50" role="region" aria-label="Entrada de texto alternativa">
           <Label htmlFor="text-input" className="text-sm font-medium mb-2 block">
-            Escribe tu respuesta (alternativa al micrófono)
+            Escribe tu respuesta {isElevenLabsMode ? "(Nota: En modo entrevista, se prioriza la voz)" : "(alternativa al micrófono)"}
           </Label>
           <div className="flex gap-2">
             <Textarea
@@ -403,9 +398,8 @@ const Simulacion = () => {
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Escribe tu respuesta aquí si prefieres no hablar..."
+              placeholder="Escribe tu respuesta aquí..."
               className="flex-1 min-h-[80px] resize-none"
-              aria-label="Campo de texto para responder sin usar el micrófono"
               disabled={isSpeaking}
             />
             <Button
@@ -413,7 +407,6 @@ const Simulacion = () => {
               disabled={!textInput.trim() || isSpeaking}
               size="icon"
               className="h-[80px] w-12 bg-gradient-hero"
-              aria-label="Enviar respuesta escrita"
             >
               <Send className="w-5 h-5" aria-hidden="true" />
             </Button>
@@ -423,23 +416,21 @@ const Simulacion = () => {
         <div className="flex gap-4" role="group" aria-label="Controles de la conversación">
           <Button
             onClick={handleToggleListening}
-            disabled={isSpeaking || !isSupported}
+            disabled={isSpeaking || (!isElevenLabsMode && !isSupported)}
             className={`flex-1 h-14 text-lg shadow-soft hover:shadow-medium transition-all ${isListening
               ? "bg-destructive hover:bg-destructive/90"
               : "bg-gradient-hero"
               }`}
-            aria-label={isListening ? "Detener grabación de voz" : "Iniciar grabación de voz"}
-            aria-pressed={isListening}
           >
             {isListening ? (
               <>
                 <MicOff className="w-5 h-5 mr-2 animate-pulse" aria-hidden="true" />
-                Detener
+                {isElevenLabsMode ? "Desconectar" : "Detener"}
               </>
             ) : (
               <>
                 <Mic className="w-5 h-5 mr-2" aria-hidden="true" />
-                Hablar
+                {isElevenLabsMode ? "Conectar Entrevista" : "Hablar"}
               </>
             )}
           </Button>
@@ -447,7 +438,6 @@ const Simulacion = () => {
             onClick={handleFinish}
             variant="outline"
             className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
-            aria-label="Finalizar sesión y ver resultados"
           >
             Finalizar
           </Button>

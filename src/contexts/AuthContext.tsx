@@ -7,6 +7,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  roles: string[];
+  isModerator: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -18,6 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [roles, setRoles] = useState<string[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +44,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  useEffect(() => {
+    if (!user) {
+      setRoles([]);
+      return;
+    }
+
+    const fetchRoles = async () => {
+      try {
+        const { data } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
+        if (data) setRoles(data.map((r: any) => r.role));
+      } catch (err) {
+        console.warn('Error fetching roles', err);
+        setRoles([]);
+      }
+    };
+
+    fetchRoles();
+  }, [user]);
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
@@ -82,7 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, roles, isModerator: roles.includes('moderator'), signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
