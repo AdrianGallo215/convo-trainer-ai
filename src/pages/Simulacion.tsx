@@ -263,7 +263,7 @@ const Simulacion = () => {
               size="lg"
               className="w-full text-lg h-12 bg-gradient-hero shadow-soft hover:shadow-medium transition-all"
             >
-              Comenzar Simulación
+              Comenzar Conversación
             </Button>
             <div className="flex justify-center">
               <Link to="/escenarios">
