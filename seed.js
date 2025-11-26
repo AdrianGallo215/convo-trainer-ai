@@ -20,8 +20,7 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 
 async function seed() {
   const psychologists = [
-    { email: 'psicologo1@example.com', password: 'PsyPass123!', full_name: 'Dra. Ana Morales', username: 'ana.morales' },
-    { email: 'psicologo2@example.com', password: 'PsyPass123!', full_name: 'Dr. Carlos Vega', username: 'carlos.vega' },
+    { email: 'psicologo@gmail.com', password: 'Psicologo_123', full_name: 'Dr. Psicólogo Principal', username: 'psicologo.principal' },
   ];
 
   for (const p of psychologists) {
@@ -69,16 +68,16 @@ async function seed() {
       console.log('Profile creado para', p.email);
     }
 
-    // Insertar rol de moderador
+    // Insertar rol de psychologist
     const { error: roleError } = await supabase.from('user_roles').insert({
       user_id: userId,
-      role: 'moderator'
+      role: 'psychologist'
     });
 
     if (roleError) {
       console.error('Error insertando user_roles para', p.email, roleError.message || roleError);
     } else {
-      console.log('Rol moderator asignado a', p.email);
+      console.log('Rol psychologist asignado a', p.email);
     }
   }
 

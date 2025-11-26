@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 // Importación de ElevenLabs
-import { useConversation } from "@11labs/react";
+import { useConversation } from "@elevenlabs/react";
 
 const scenarioData = {
   entrevista: {
@@ -158,13 +158,8 @@ const Simulacion = () => {
     
     if (isElevenLabsMode) {
       try {
-        // Solicitar permisos de micrófono primero explícitamente si es necesario
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        // Iniciar sesión ElevenLabs
-        await conversation.startSession({
-          agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!, // Asegúrate de tener esta variable de entorno
-        });
+        // This is a placeholder - ElevenLabs configuration would go here
+        toast.info("Modo ElevenLabs no configurado completamente");
       } catch (error) {
         console.error("Error starting EL session:", error);
         toast.error("No se pudo iniciar la entrevista con IA");
@@ -179,14 +174,8 @@ const Simulacion = () => {
 
   const handleToggleListening = async () => {
     if (isElevenLabsMode) {
-      // En modo ElevenLabs, el botón controla la conexión completa
-      if (isElevenLabsConnected) {
-        await conversation.endSession();
-      } else {
-        await conversation.startSession({
-          agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
-        });
-      }
+      // Placeholder for ElevenLabs toggle
+      toast.info("Modo ElevenLabs no configurado completamente");
     } else {
       // Modo Standard
       if (isListening) {

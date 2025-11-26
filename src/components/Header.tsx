@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Brain, Settings, LogIn, LogOut, TrendingUp, User as UserIcon, ChevronDown } from "lucide-react";
+import { Brain, Settings, LogIn, LogOut, TrendingUp, User as UserIcon, ChevronDown, UserCog } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -14,7 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Header = () => {
-    const { user, signOut } = useAuth();
+    const { user, signOut, isPsychologist } = useAuth();
 
     // Get user name or default to "Usuario"
     const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Usuario";
@@ -48,12 +48,21 @@ export const Header = () => {
                             <DropdownMenuContent align="end" className="w-56">
                                 <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <Link to="/progress">
-                                    <DropdownMenuItem className="cursor-pointer gap-2">
-                                        <TrendingUp className="w-4 h-4" />
-                                        <span>Progreso</span>
-                                    </DropdownMenuItem>
-                                </Link>
+                                {isPsychologist ? (
+                                    <Link to="/psychologist">
+                                        <DropdownMenuItem className="cursor-pointer gap-2">
+                                            <UserCog className="w-4 h-4" />
+                                            <span>Panel de Psicólogo</span>
+                                        </DropdownMenuItem>
+                                    </Link>
+                                ) : (
+                                    <Link to="/progress">
+                                        <DropdownMenuItem className="cursor-pointer gap-2">
+                                            <TrendingUp className="w-4 h-4" />
+                                            <span>Progreso</span>
+                                        </DropdownMenuItem>
+                                    </Link>
+                                )}
                                 <Link to="/configuracion">
                                     <DropdownMenuItem className="cursor-pointer gap-2">
                                         <Settings className="w-4 h-4" />

@@ -13,6 +13,7 @@ import Simulacion from "./pages/Simulacion";
 import Feedback from "./pages/Feedback";
 import Progress from "./pages/Progress";
 import Moderator from "./pages/Moderator";
+import Psychologist from "./pages/Psychologist";
 import Configuracion from "./pages/Configuracion";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
               <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
               <Route path="/moderator" element={<ProtectedRoute><Moderator /></ProtectedRoute>} />
+              <Route path="/psychologist" element={<ProtectedRoute><Psychologist /></ProtectedRoute>} />
               <Route path="/configuracion" element={<Configuracion />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
