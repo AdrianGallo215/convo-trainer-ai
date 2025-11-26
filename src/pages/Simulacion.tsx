@@ -59,50 +59,53 @@ const Simulacion = () => {
   const [sessionStartTime] = useState(Date.now());
 
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
-  const speakRef = useRef<(text: string) => void>(() => { });
+  const speakRef = useRef<(text: string) => void>(() => {});
 
   useEffect(() => {
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
     setShowSubtitles(savedSubtitles);
   }, []);
 
-  const handleUserTranscript = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+  const handleUserTranscript = useCallback(
+    async (text: string) => {
+      if (!text.trim()) return;
 
-    // Add user message
-    const newUserMessage: { role: "user" | "ai"; text: string } = { role: "user", text };
-    setMessages((prev) => [...prev, newUserMessage]);
-    toast.success("Respuesta registrada");
+      // Add user message
+      const newUserMessage: { role: "user" | "ai"; text: string } = { role: "user", text };
+      setMessages((prev) => [...prev, newUserMessage]);
+      toast.success("Respuesta registrada");
 
-    try {
-      // Get AI response from Groq
-      const allMessages = [...messages, newUserMessage].map(msg => ({
-        role: msg.role === "user" ? "user" : "assistant",
-        content: msg.text
-      }));
+      try {
+        // Get AI response from Groq
+        const allMessages = [...messages, newUserMessage].map((msg) => ({
+          role: msg.role === "user" ? "user" : "assistant",
+          content: msg.text,
+        }));
 
-      const { data, error } = await supabase.functions.invoke('groq-chat', {
-        body: {
-          messages: allMessages,
-          scenarioType: tipo
+        const { data, error } = await supabase.functions.invoke("groq-chat", {
+          body: {
+            messages: allMessages,
+            scenarioType: tipo,
+          },
+        });
+
+        if (error) throw error;
+
+        const aiResponse = data.response;
+        setMessages((prev) => [...prev, { role: "ai" as const, text: aiResponse }]);
+        setResponseIndex((prev) => prev + 1);
+
+        // Speak the AI response
+        if (speakRef.current) {
+          speakRef.current(aiResponse);
         }
-      });
-
-      if (error) throw error;
-
-      const aiResponse = data.response;
-      setMessages((prev) => [...prev, { role: "ai" as const, text: aiResponse }]);
-      setResponseIndex((prev) => prev + 1);
-
-      // Speak the AI response
-      if (speakRef.current) {
-        speakRef.current(aiResponse);
+      } catch (error) {
+        console.error("Error getting AI response:", error);
+        toast.error("Error al obtener respuesta de la IA");
       }
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      toast.error("Error al obtener respuesta de la IA");
-    }
-  }, [messages, tipo]);
+    },
+    [messages, tipo],
+  );
 
   const handleTextSubmit = () => {
     if (!textInput.trim()) return;
@@ -118,19 +121,11 @@ const Simulacion = () => {
     }
   };
 
-  const {
-    isListening,
-    isSpeaking,
-    transcript,
-    startListening,
-    stopListening,
-    speak,
-    stopSpeaking,
-    isSupported,
-  } = useVoiceInteraction({
-    onTranscript: handleUserTranscript,
-    language: 'es-ES',
-  });
+  const { isListening, isSpeaking, transcript, startListening, stopListening, speak, stopSpeaking, isSupported } =
+    useVoiceInteraction({
+      onTranscript: handleUserTranscript,
+      language: "es-ES",
+    });
 
   // Update ref when speak function changes
   useEffect(() => {
@@ -184,21 +179,21 @@ const Simulacion = () => {
       let recommendations: string[] = [
         "Practica mantener contacto visual durante las conversaciones",
         "Trabaja en reducir muletillas y pausas innecesarias",
-        "Ajusta tu tono según el contexto de la conversación"
+        "Ajusta tu tono según el contexto de la conversación",
       ];
 
       if (user && messages.length > 0) {
         try {
-          const conversationMessages = messages.map(msg => ({
+          const conversationMessages = messages.map((msg) => ({
             role: msg.role === "user" ? "user" : "assistant",
-            content: msg.text
+            content: msg.text,
           }));
 
-          const { data, error } = await supabase.functions.invoke('groq-analyze', {
+          const { data, error } = await supabase.functions.invoke("groq-analyze", {
             body: {
               messages: conversationMessages,
-              scenarioType: tipo
-            }
+              scenarioType: tipo,
+            },
           });
 
           if (!error && data) {
@@ -208,7 +203,7 @@ const Simulacion = () => {
             recommendations = data.recommendations || recommendations;
           }
         } catch (error) {
-          console.error('Error analyzing conversation:', error);
+          console.error("Error analyzing conversation:", error);
           toast.error("Error al analizar la conversación, usando valores predeterminados");
         }
       }
@@ -245,7 +240,7 @@ const Simulacion = () => {
         });
       }
     } catch (error) {
-      console.error('Error finishing session:', error);
+      console.error("Error finishing session:", error);
       toast.error("Error al finalizar la sesión");
     }
   };
@@ -257,15 +252,11 @@ const Simulacion = () => {
         <main className="flex-1 bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6 flex items-center justify-center">
           <div className="text-center space-y-6 max-w-md mx-auto p-8 bg-card rounded-3xl shadow-medium border border-border/50">
             <Avatar className="w-24 h-24 mx-auto bg-gradient-hero shadow-soft">
-              <AvatarFallback className="text-4xl bg-transparent">
-                {scenario.avatar}
-              </AvatarFallback>
+              <AvatarFallback className="text-4xl bg-transparent">{scenario.avatar}</AvatarFallback>
             </Avatar>
             <div className="space-y-2">
               <h1 className="text-2xl font-bold">{scenario.title}</h1>
-              <p className="text-muted-foreground">
-                Haz clic en comenzar para iniciar la simulación de voz.
-              </p>
+              <p className="text-muted-foreground">Haz clic en comenzar para iniciar la conversación de voz.</p>
             </div>
             <Button
               onClick={handleStart}
@@ -305,16 +296,29 @@ const Simulacion = () => {
 
             <div className="flex items-center gap-4">
               {!isSupported && (
-                <div className="text-sm text-muted-foreground bg-secondary px-3 py-1 rounded-full" role="status" aria-live="polite">
+                <div
+                  className="text-sm text-muted-foreground bg-secondary px-3 py-1 rounded-full"
+                  role="status"
+                  aria-live="polite"
+                >
                   Voz no disponible
                 </div>
               )}
             </div>
           </header>
 
-          <div className="relative bg-card rounded-3xl shadow-medium p-6 md:p-8 space-y-6 border border-border/50 min-h-[60vh]" role="region" aria-label="Área de conversación">
+          <div
+            className="relative bg-card rounded-3xl shadow-medium p-6 md:p-8 space-y-6 border border-border/50 min-h-[60vh]"
+            role="region"
+            aria-label="Área de conversación"
+          >
             {/* Indicador de estado */}
-            <div className="absolute top-4 right-4 flex items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
+            <div
+              className="absolute top-4 right-4 flex items-center gap-2"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               {isSpeaking && (
                 <div className="flex items-center gap-2 text-primary animate-pulse">
                   <Volume2 className="w-4 h-4" aria-hidden="true" />
@@ -330,31 +334,41 @@ const Simulacion = () => {
             </div>
 
             {/* Mensaje inicial */}
-            <div className="flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500" role="article" aria-label="Mensaje del asistente virtual">
+            <div
+              className="flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              role="article"
+              aria-label="Mensaje del asistente virtual"
+            >
               <Avatar className="w-14 h-14 md:w-16 md:h-16 bg-gradient-hero shadow-soft" aria-hidden="true">
-                <AvatarFallback className="text-2xl md:text-3xl bg-transparent">
-                  {scenario.avatar}
-                </AvatarFallback>
+                <AvatarFallback className="text-2xl md:text-3xl bg-transparent">{scenario.avatar}</AvatarFallback>
               </Avatar>
               <div className="flex-1 bg-secondary/80 rounded-2xl p-4 shadow-soft backdrop-blur-sm">
                 <p className="text-foreground leading-relaxed">{scenario.initialMessage}</p>
                 {showSubtitles && (
-                  <span className="sr-only" aria-live="polite">{scenario.initialMessage}</span>
+                  <span className="sr-only" aria-live="polite">
+                    {scenario.initialMessage}
+                  </span>
                 )}
               </div>
             </div>
 
             {/* Transcripción en tiempo real */}
             {isListening && transcript && (
-              <div className="flex items-start gap-4 flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300" role="article" aria-label="Tu respuesta en progreso" aria-live="polite">
-                <div className="w-12 h-12 rounded-full bg-accent/80 flex items-center justify-center shadow-soft backdrop-blur-sm" aria-hidden="true">
+              <div
+                className="flex items-start gap-4 flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300"
+                role="article"
+                aria-label="Tu respuesta en progreso"
+                aria-live="polite"
+              >
+                <div
+                  className="w-12 h-12 rounded-full bg-accent/80 flex items-center justify-center shadow-soft backdrop-blur-sm"
+                  aria-hidden="true"
+                >
                   <span className="text-2xl">👤</span>
                 </div>
                 <div className="flex-1 rounded-2xl p-4 shadow-soft bg-primary/80 text-primary-foreground backdrop-blur-sm border-2 border-primary">
                   <p className="italic opacity-80">{transcript}...</p>
-                  {showSubtitles && (
-                    <span className="sr-only">{transcript}</span>
-                  )}
+                  {showSubtitles && <span className="sr-only">{transcript}</span>}
                 </div>
               </div>
             )}
@@ -363,28 +377,33 @@ const Simulacion = () => {
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${message.role === "user" ? "flex-row-reverse" : ""
-                  }`}
+                className={`flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${
+                  message.role === "user" ? "flex-row-reverse" : ""
+                }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
                 role="article"
                 aria-label={message.role === "user" ? "Tu mensaje" : "Mensaje del asistente"}
               >
                 {message.role === "ai" && (
-                  <Avatar className="w-12 h-12 md:w-16 md:h-16 bg-gradient-hero shadow-soft border-2 border-background" aria-hidden="true">
-                    <AvatarFallback className="text-2xl md:text-3xl bg-transparent">
-                      {scenario.avatar}
-                    </AvatarFallback>
+                  <Avatar
+                    className="w-12 h-12 md:w-16 md:h-16 bg-gradient-hero shadow-soft border-2 border-background"
+                    aria-hidden="true"
+                  >
+                    <AvatarFallback className="text-2xl md:text-3xl bg-transparent">{scenario.avatar}</AvatarFallback>
                   </Avatar>
                 )}
                 <div
-                  className={`flex-1 rounded-3xl p-6 shadow-soft backdrop-blur-sm text-lg md:text-xl leading-relaxed ${message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary/90 text-foreground border-2 border-border/50"
-                    }`}
+                  className={`flex-1 rounded-3xl p-6 shadow-soft backdrop-blur-sm text-lg md:text-xl leading-relaxed ${
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/90 text-foreground border-2 border-border/50"
+                  }`}
                 >
                   <p>{message.text}</p>
                   {showSubtitles && (
-                    <span className="sr-only" aria-live="polite">{message.text}</span>
+                    <span className="sr-only" aria-live="polite">
+                      {message.text}
+                    </span>
                   )}
                   <div className="mt-3 flex justify-end">
                     <Button
@@ -399,7 +418,10 @@ const Simulacion = () => {
                   </div>
                 </div>
                 {message.role === "user" && (
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-accent flex items-center justify-center shadow-soft border-2 border-background" aria-hidden="true">
+                  <div
+                    className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-accent flex items-center justify-center shadow-soft border-2 border-background"
+                    aria-hidden="true"
+                  >
                     <span className="text-2xl md:text-3xl">👤</span>
                   </div>
                 )}
@@ -408,7 +430,11 @@ const Simulacion = () => {
           </div>
 
           {/* Campo de entrada de texto alternativo */}
-          <div className="bg-card rounded-2xl shadow-soft p-4 border border-border/50" role="region" aria-label="Entrada de texto alternativa">
+          <div
+            className="bg-card rounded-2xl shadow-soft p-4 border border-border/50"
+            role="region"
+            aria-label="Entrada de texto alternativa"
+          >
             <Label htmlFor="text-input" className="text-sm font-medium mb-2 block">
               Escribe tu respuesta (alternativa al micrófono)
             </Label>
@@ -439,10 +465,9 @@ const Simulacion = () => {
             <Button
               onClick={handleToggleListening}
               disabled={isSpeaking || !isSupported}
-              className={`flex-1 h-14 text-lg shadow-soft hover:shadow-medium transition-all ${isListening
-                ? "bg-destructive hover:bg-destructive/90"
-                : "bg-gradient-hero"
-                }`}
+              className={`flex-1 h-14 text-lg shadow-soft hover:shadow-medium transition-all ${
+                isListening ? "bg-destructive hover:bg-destructive/90" : "bg-gradient-hero"
+              }`}
               aria-label={isListening ? "Detener grabación de voz" : "Iniciar grabación de voz"}
               aria-pressed={isListening}
             >
