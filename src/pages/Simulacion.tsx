@@ -466,6 +466,7 @@ const Simulacion = () => {
             </div>
 
             {/* Transcripción en tiempo real */}
+            {console.log("isListening: ", isListening, " transcript: ", transcript);}
             {isListening && transcript && (
               <div
                 className="flex items-start gap-4 flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300"
