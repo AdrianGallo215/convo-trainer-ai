@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Briefcase, MessageCircle, Presentation } from "lucide-react";
+import { ArrowLeft, Briefcase, MessageCircle, Presentation, Settings } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const scenarios = [
@@ -40,11 +40,18 @@ const Escenarios = () => {
               </Button>
             </Link>
             <div>
-              <h1 className="text-4xl font-bold text-foreground tracking-tight">Selecciona un escenario</h1>
-              <p className="text-muted-foreground mt-2 text-lg">Elige el tipo de práctica que deseas realizar</p>
+              <h1 className="text-5xl font-bold text-foreground tracking-tight">Selecciona un escenario</h1>
+              <p className="text-muted-foreground mt-2 text-xl">Elige el tipo de práctica que deseas realizar</p>
             </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Link to="/configuracion">
+              <Button variant="ghost" size="icon" className="rounded-full w-12 h-12">
+                <Settings className="w-6 h-6" />
+              </Button>
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -59,11 +66,11 @@ const Escenarios = () => {
                   <Icon className="w-10 h-10 text-white" />
                 </div>
                 <div className="space-y-3 flex-1">
-                  <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">{scenario.title}</h3>
-                  <p className="text-muted-foreground text-base leading-relaxed">{scenario.description}</p>
+                  <h3 className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors">{scenario.title}</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">{scenario.description}</p>
                 </div>
                 <Link to={`/simulacion/${scenario.id}`} className="block">
-                  <Button className="w-full h-12 text-lg font-medium bg-primary text-primary-foreground shadow-soft hover:shadow-medium transition-all rounded-xl group-hover:bg-primary/90">
+                  <Button className="w-full h-12 text-xl font-medium bg-primary text-primary-foreground shadow-soft hover:shadow-medium transition-all rounded-xl group-hover:bg-primary/90">
                     Practicar
                   </Button>
                 </Link>
