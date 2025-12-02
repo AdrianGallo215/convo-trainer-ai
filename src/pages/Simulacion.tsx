@@ -62,6 +62,7 @@ const Simulacion = () => {
   const [showSubtitles, setShowSubtitles] = useState(true);
   const [sessionStartTime] = useState(Date.now());
   const aiFinishTimeRef = useRef<number>(0);
+  const [sessionEnded, setSessionEnded] = useState(false);
 
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
   const speakRef = useRef<(text: string) => void>(() => {});
@@ -254,6 +255,8 @@ const Simulacion = () => {
     try {
       toast.loading("Analizando conversación...");
 
+      setSessionEnded(true);
+
       // Calculate session duration
       const durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
 
@@ -347,7 +350,14 @@ const Simulacion = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
-        <main className="flex-1 bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6 flex items-center justify-center">
+        <main className="flex-1 bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6 flex items-center justify-center relative">
+          {/*Boton nuevo de volver*/}
+          <Link to="/escenarios" className="absolute top-6 left-6 md:top-12 md:left-24">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver
+            </Button>
+          </Link>
           <div className="text-center space-y-6 max-w-md mx-auto p-8 bg-card rounded-3xl shadow-medium border border-border/50">
             <Avatar className="w-24 h-24 mx-auto bg-gradient-hero shadow-soft">
               <AvatarFallback className="text-4xl bg-transparent">{scenario.avatar}</AvatarFallback>
@@ -559,7 +569,7 @@ const Simulacion = () => {
                 onChange={(e) => setTextInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Escribe tu respuesta aquí si prefieres no hablar..."
-                className="flex-1 min-h-[80px] resize-none"
+                className="flex-1 min-h-[80px] resize-none bg-secondary/90"
                 aria-label="Campo de texto para responder sin usar el micrófono"
                 disabled={isSpeaking}
               />
@@ -573,16 +583,28 @@ const Simulacion = () => {
                 <Send className="w-5 h-5" aria-hidden="true" />
               </Button>
             </div>
+
+            <Button
+              onClick={handleFinish}
+              disabled={sessionEnded}
+              variant="outline"
+              className="h-14 mt-6 mb-2 px-16 text-lg text-white border-2 bg-primary hover:bg-primary/50"
+              aria-label="Finalizar sesión y ver resultados"
+            >
+              {sessionEnded ? "Finalizando..." : "Finalizar"}
+            </Button>
           </div>
         </div>
+        {/*
         <Button
           onClick={handleFinish}
           variant="outline"
-          className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
+          className="h-14 px-8 text-lg border-2 bg-primary hover:bg-primary/50 "
           aria-label="Finalizar sesión y ver resultados"
         >
           Finalizar
         </Button>
+        */}
       </main>
     </div>
   );
