@@ -148,7 +148,7 @@ const ModeratorPage = () => {
               <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             </Button>
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Panel del Psicólogo</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Panel de Moderador</h1>
         </header>
 
         <Card className="p-6">
@@ -169,7 +169,7 @@ const ModeratorPage = () => {
                     onClick={() => openPatient(p)}
                     className={`w-full text-left p-3 rounded-lg border ${selectedPatient?.id === p.id ? 'bg-primary/10 border-primary/30' : 'bg-card'}`}
                   >
-                    <div className="font-medium">{p.full_name || p.username || p.id}</div>
+                    <div className="font-medium">{p.full_name || p.username || "Usuario sin nombre"}</div>
                     <div className="text-sm text-muted-foreground">{p.username}</div>
                   </button>
                 ))}
