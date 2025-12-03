@@ -14,6 +14,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import type { AudioMetrics } from "@/types/audioMetrics";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const scenarioData = {
   entrevista: {
@@ -61,10 +66,11 @@ const Simulacion = () => {
   const [textInput, setTextInput] = useState("");
   const [showSubtitles, setShowSubtitles] = useState(true);
   const [sessionStartTime] = useState(Date.now());
+  const [isThinking, setIsThinking] = useState(false);
   const aiFinishTimeRef = useRef<number>(0);
 
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
-  const speakRef = useRef<(text: string) => void>(() => {});
+  const speakRef = useRef<(text: string) => void>(() => { });
 
   const {
     status,
@@ -127,6 +133,7 @@ const Simulacion = () => {
       setMessages((prev) => [...prev, newUserMessage]);
       toast.success("Respuesta registrada");
       sendMessage(text);
+      setIsThinking(true);
 
       // Log audio metrics
       if (updatedMetrics) {
@@ -160,6 +167,7 @@ const Simulacion = () => {
         const aiResponse = data.response;
         setMessages((prev) => [...prev, { role: "ai" as const, text: aiResponse }]);
         setResponseIndex((prev) => prev + 1);
+        setIsThinking(false);
 
         // Speak the AI response
         if (speakRef.current) {
@@ -173,6 +181,7 @@ const Simulacion = () => {
       } catch (error) {
         console.error("Error getting AI response:", error);
         toast.error("Error al obtener respuesta de la IA");
+        setIsThinking(false);
       }
     },
     [messages, tipo],
@@ -192,11 +201,18 @@ const Simulacion = () => {
     }
   };
 
-  const { isListening, isSpeaking, transcript, startListening, stopListening, speak, stopSpeaking, isSupported } =
+  const { isListening, isSpeaking, transcript, startListening, stopListening, speak, stopSpeaking, isSupported, error: voiceError } =
     useVoiceInteraction({
       onTranscript: handleUserTranscript,
       language: "es-ES",
     });
+
+  // Handle voice errors
+  useEffect(() => {
+    if (voiceError) {
+      toast.error(`Error de voz: ${voiceError}`);
+    }
+  }, [voiceError]);
 
   // Update ref when speak function changes
   useEffect(() => {
@@ -436,13 +452,13 @@ const Simulacion = () => {
               {isSpeaking && (
                 <div className="flex items-center gap-2 text-primary animate-pulse">
                   <Volume2 className="w-4 h-4" aria-hidden="true" />
-                  <span className="text-sm">Hablando...</span>
+                  <span className="text-lg ">Hablando...</span>
                 </div>
               )}
               {isListening && (
-                <div className="flex items-center gap-2 text-destructive animate-pulse">
-                  <div className="w-3 h-3 rounded-full bg-destructive" aria-hidden="true" />
-                  <span className="text-sm">Escuchando...</span>
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-500 animate-pulse">
+                  <Mic className="w-6 h-6" aria-hidden="true" />
+                  <span className="text-lg">Escuchando...</span>
                 </div>
               )}
             </div>
@@ -491,9 +507,8 @@ const Simulacion = () => {
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${
-                  message.role === "user" ? "flex-row-reverse" : ""
-                }`}
+                className={`flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${message.role === "user" ? "flex-row-reverse" : ""
+                  }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
                 role="article"
                 aria-label={message.role === "user" ? "Tu mensaje" : "Mensaje del asistente"}
@@ -507,11 +522,10 @@ const Simulacion = () => {
                   </Avatar>
                 )}
                 <div
-                  className={`flex-1 rounded-3xl p-6 shadow-soft backdrop-blur-sm text-lg md:text-xl leading-relaxed ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary/90 text-foreground border-2 border-border/50"
-                  }`}
+                  className={`flex-1 rounded-3xl p-6 shadow-soft backdrop-blur-sm text-lg md:text-xl leading-relaxed ${message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/90 text-foreground border-2 border-border/50"
+                    }`}
                 >
                   <p>{message.text}</p>
                   {showSubtitles && (
@@ -541,6 +555,28 @@ const Simulacion = () => {
                 )}
               </div>
             ))}
+
+            {/* Indicador de "Escribiendo..." */}
+            {isThinking && (
+              <div
+                className="flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                role="status"
+                aria-label="El asistente está pensando"
+              >
+                <Avatar
+                  className="w-12 h-12 md:w-16 md:h-16 bg-gradient-hero shadow-soft border-2 border-background"
+                  aria-hidden="true"
+                >
+                  <AvatarFallback className="text-2xl md:text-3xl bg-transparent">{scenario.avatar}</AvatarFallback>
+                </Avatar>
+                <div className="bg-secondary/90 rounded-3xl p-6 shadow-soft backdrop-blur-sm border-2 border-border/50 flex items-center gap-1 h-[88px]">
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce"></div>
+                  <span className="sr-only">Pensando...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Campo de entrada de texto alternativo */}
@@ -553,6 +589,31 @@ const Simulacion = () => {
               Escribe tu respuesta (alternativa al micrófono)
             </Label>
             <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      onClick={handleToggleListening}
+                      variant={isListening ? "destructive" : "default"}
+                      size="icon-xl"
+                      className={`${isListening ? "animate-pulse" : "bg-gradient-hero text-white"}`}
+                      aria-label={isListening ? "Detener grabación" : "Iniciar grabación"}
+                      disabled={!isSupported || !!voiceError}
+                    >
+                      {isListening ? <MicOff /> : <Mic />}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {!isSupported
+                    ? "Tu navegador no soporta reconocimiento de voz"
+                    : voiceError
+                      ? "Error accediendo al micrófono"
+                      : isListening
+                        ? "Detener grabación"
+                        : "Iniciar grabación"}
+                </TooltipContent>
+              </Tooltip>
               <Textarea
                 id="text-input"
                 value={textInput}

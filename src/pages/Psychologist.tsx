@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Search, TrendingUp, Award, Activity, Clock, Target } from "lucide-react";
+import { Search, TrendingUp, Award, Activity, Clock, Target, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PatientItem {
@@ -88,7 +88,7 @@ export default function PsychologistPage() {
   const openPatient = async (patientId: string) => {
     setLoading(true);
     setSelectedPatient(patientId);
-    
+
     try {
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
@@ -96,7 +96,7 @@ export default function PsychologistPage() {
         .select("*")
         .eq("id", patientId)
         .single();
-      
+
       if (profileError) throw profileError;
       setProfile(profileData);
 
@@ -106,7 +106,7 @@ export default function PsychologistPage() {
         .select("*")
         .eq("user_id", patientId)
         .single();
-      
+
       if (statsError) throw statsError;
       setStats(statsData);
 
@@ -122,7 +122,7 @@ export default function PsychologistPage() {
         .eq("user_id", patientId);
 
       const unlockedIds = new Set(unlockedAchievements?.map(ua => ua.achievement_id) || []);
-      
+
       const achievementsWithStatus = (allAchievements || []).map(ach => ({
         ...ach,
         unlocked: unlockedIds.has(ach.id)
@@ -195,16 +195,19 @@ export default function PsychologistPage() {
               <Button onClick={() => fetchPatients(searchQuery)}>Buscar</Button>
             </div>
 
-            {loading && <p className="text-center mt-4 text-muted-foreground">Cargando...</p>}
+            {loading && (
+              <div className="flex justify-center mt-4">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            )}
 
             <div className="mt-6 space-y-2">
               {patients.map((patient) => (
                 <div
                   key={patient.id}
                   onClick={() => openPatient(patient.id)}
-                  className={`p-4 rounded-lg border cursor-pointer transition-colors hover:bg-secondary/50 ${
-                    selectedPatient === patient.id ? "bg-secondary border-primary" : "bg-card"
-                  }`}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors hover:bg-secondary/50 ${selectedPatient === patient.id ? "bg-secondary border-primary" : "bg-card"
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -327,11 +330,10 @@ export default function PsychologistPage() {
                   {achievements.map((achievement) => (
                     <div
                       key={achievement.id}
-                      className={`p-4 rounded-lg border transition-all ${
-                        achievement.unlocked
-                          ? "bg-primary/5 border-primary/20"
-                          : "bg-muted/30 border-muted opacity-60"
-                      }`}
+                      className={`p-4 rounded-lg border transition-all ${achievement.unlocked
+                        ? "bg-primary/5 border-primary/20"
+                        : "bg-muted/30 border-muted opacity-60"
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <div className="text-3xl">{achievement.icon}</div>

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Trophy, Calendar, Award, TrendingUp, Zap } from "lucide-react";
+import { ArrowLeft, Trophy, Calendar, Award, TrendingUp, Zap, Loader2 } from "lucide-react";
 
 interface PatientItem {
   id: string;
@@ -157,7 +157,9 @@ const ModeratorPage = () => {
               <Label>Buscar paciente</Label>
               <div className="flex gap-2 mt-2">
                 <Input placeholder="Nombre o usuario" value={search} onChange={(e) => setSearch(e.target.value)} />
-                <Button onClick={fetchPatients} disabled={loading}>Buscar</Button>
+                <Button onClick={fetchPatients} disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buscar"}
+                </Button>
               </div>
 
               <div className="mt-4 space-y-2 max-h-96 overflow-auto">
