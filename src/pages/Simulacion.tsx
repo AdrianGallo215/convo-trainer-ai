@@ -191,8 +191,12 @@ const Simulacion = () => {
         }
       } catch (error) {
         console.error("Error getting AI response:", error);
-        toast.error("No pudimos conectar con el asistente");
+        toast.error("No pudimos conectar con el asistente. Intenta de nuevo.");
         setIsThinking(false);
+        // Restore the message to the input so the user can try again
+        setTextInput(text);
+        // Remove the optimistic message
+        setMessages((prev) => prev.slice(0, -1));
       }
     },
     [messages, tipo],
@@ -241,6 +245,7 @@ const Simulacion = () => {
   if (!scenario) {
     return <div>Conversación no disponible</div>;
   }
+
 
   const [hasStarted, setHasStarted] = useState(false);
 
@@ -651,7 +656,7 @@ const Simulacion = () => {
                       size="icon-xl"
                       className={`${isListening ? "animate-pulse" : "bg-gradient-hero text-white"}`}
                       aria-label={isListening ? "Detener grabación" : "Iniciar grabación"}
-                      disabled={!isSupported || !!voiceError}
+                      disabled={!isSupported || !!voiceError || isThinking}
                     >
                       {isListening ? <MicOff /> : <Mic />}
                     </Button>
@@ -662,24 +667,27 @@ const Simulacion = () => {
                     ? "Tu navegador no soporta reconocimiento de voz"
                     : voiceError
                       ? "Error accediendo al micrófono"
-                      : isListening
-                        ? "Detener grabación"
-                        : "Iniciar grabación"}
+                      : isThinking
+                        ? "Procesando respuesta..."
+                        : isListening
+                          ? "Detener grabación"
+                          : "Iniciar grabación"}
                 </TooltipContent>
               </Tooltip>
+
               <Textarea
                 id="text-input"
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu respuesta aquí si prefieres no hablar..."
+                placeholder={isThinking ? "El asistente está pensando..." : "Escribe tu respuesta aquí si prefieres no hablar..."}
                 className="flex-1 min-h-[80px] resize-none"
                 aria-label="Campo de texto para responder sin usar el micrófono"
-                disabled={isSpeaking}
+                disabled={isSpeaking || isThinking}
               />
               <Button
                 onClick={handleTextSubmit}
-                disabled={!textInput.trim() || isSpeaking}
+                disabled={!textInput.trim() || isSpeaking || isThinking}
                 size="icon"
                 className="h-[80px] w-12 bg-gradient-hero"
                 aria-label="Enviar respuesta escrita"
