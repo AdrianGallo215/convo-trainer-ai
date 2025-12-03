@@ -1,107 +1,74 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Trophy, Zap, TrendingUp, Calendar, Award } from "lucide-react";
-import { toast } from "sonner";
-
-interface Profile {
-  xp: number;
-  level: number;
-  streak_days: number;
-  total_sessions: number;
-}
-
-interface Achievement {
-  id: string;
-  code: string;
-  title: string;
-  description: string;
-  icon: string;
-  xp_reward: number;
-  unlocked_at?: string;
-}
-
-interface Statistics {
-  avg_confidence: number;
-  avg_fluency: number;
-  avg_tone: number;
-  total_practice_time: number;
-  best_scenario: string;
-}
+import { ArrowLeft, Award, Zap, TrendingUp, Calendar, Trophy } from "lucide-react";
 
 const ProgressPage = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [stats, setStats] = useState<Statistics | null>(null);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const showPlan = location.state?.fromQuestionnaire;
 
-  useEffect(() => {
-    if (!user) return;
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id as string)
+        .single();
 
-    const fetchData = async () => {
-      try {
-        // Fetch profile
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("xp, level, streak_days, total_sessions")
-          .eq("id", user.id)
-          .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
-        if (profileData) setProfile(profileData);
+  const { data: stats } = useQuery({
+    queryKey: ['user_statistics', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_statistics')
+        .select('*')
+        .eq('user_id', user?.id as string)
+        .maybeSingle();
 
-        // Fetch achievements (all + unlocked)
-        const { data: allAchievements } = await supabase
-          .from("achievements")
-          .select("*")
-          .order("xp_reward");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
-        const { data: unlockedIds } = await supabase
-          .from("user_achievements")
-          .select("achievement_id, unlocked_at")
-          .eq("user_id", user.id);
+  const { data: achievements = [] } = useQuery({
+    queryKey: ['achievements', user?.id],
+    queryFn: async () => {
+      const { data: allAchievements, error: achievementsError } = await supabase
+        .from('achievements')
+        .select('*');
 
-        const unlockedMap = new Map(unlockedIds?.map(u => [u.achievement_id, u.unlocked_at]) || []);
-        const achievementsWithStatus = allAchievements?.map(ach => ({
-          ...ach,
-          unlocked_at: unlockedMap.get(ach.id)
-        })) || [];
+      if (achievementsError) throw achievementsError;
 
-        setAchievements(achievementsWithStatus);
+      const { data: userAchievements, error: userAchievementsError } = await supabase
+        .from('user_achievements')
+        .select('*')
+        .eq('user_id', user?.id as string);
 
-        // Fetch statistics
-        const { data: statsData } = await supabase
-          .from("user_statistics")
-          .select("*")
-          .eq("user_id", user.id)
-          .single();
+      if (userAchievementsError) throw userAchievementsError;
 
-        if (statsData) setStats(statsData);
-      } catch (error) {
-        toast.error("Error al cargar progreso");
-      } finally {
-        setLoading(false);
-      }
-    };
+      return allAchievements.map(achievement => ({
+        ...achievement,
+        unlocked_at: userAchievements?.find(ua => ua.achievement_id === achievement.id)?.unlocked_at
+      }));
+    },
+    enabled: !!user?.id,
+  });
 
-    fetchData();
-  }, [user]);
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Cargando progreso...</div>
-      </main>
-    );
-  }
-
-  const xpForNextLevel = profile ? (profile.level * 100) + ((profile.level - 1) * 50) : 100;
-  const xpProgress = profile ? (profile.xp / xpForNextLevel) * 100 : 0;
   const unlockedCount = achievements.filter(a => a.unlocked_at).length;
+  const xpForNextLevel = (profile?.level || 1) * 1000;
+  const xpProgress = Math.min(100, ((profile?.xp || 0) / xpForNextLevel) * 100);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background p-4 md:p-6">
@@ -114,6 +81,46 @@ const ProgressPage = () => {
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">Mi Progreso</h1>
         </header>
+
+        {showPlan && (
+          <Card className="p-8 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20 shadow-lg animate-in slide-in-from-top-4 duration-700">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="flex-1 space-y-4">
+                <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm">
+                  <Award className="w-5 h-5" />
+                  Plan Personalizado Listo
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Tu camino hacia una voz confiada</h2>
+                <p className="text-lg text-gray-600">
+                  Basado en tus respuestas, hemos diseñado un plan de 4 semanas para mejorar tu proyección y claridad.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <div className="bg-white/60 p-4 rounded-xl border border-primary/10">
+                    <h3 className="font-bold text-primary mb-1">Semana 1: Fundamentos</h3>
+                    <p className="text-sm text-gray-600">Respiración y postura vocal.</p>
+                  </div>
+                  <div className="bg-white/60 p-4 rounded-xl border border-primary/10">
+                    <h3 className="font-bold text-primary mb-1">Semana 2: Claridad</h3>
+                    <p className="text-sm text-gray-600">Articulación y eliminación de muletillas.</p>
+                  </div>
+                </div>
+                <Button className="mt-4 w-full sm:w-auto text-lg h-12 px-8 shadow-xl shadow-primary/20" size="lg">
+                  Comenzar mi Plan
+                </Button>
+              </div>
+              <div className="w-full md:w-1/3 flex justify-center">
+                {/* Placeholder for a graph or visual */}
+                <div className="relative w-48 h-48 bg-white rounded-full flex items-center justify-center shadow-inner border-4 border-white">
+                  <div className="text-center">
+                    <span className="block text-4xl font-bold text-primary">92%</span>
+                    <span className="text-xs text-gray-500 uppercase font-semibold">Potencial</span>
+                  </div>
+                  <div className="absolute inset-0 rounded-full border-4 border-primary/30 border-t-primary animate-spin-slow" />
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Level & XP Card */}
         <Card className="p-6 md:p-8 bg-gradient-card border-border/50">
@@ -187,11 +194,10 @@ const ProgressPage = () => {
             {achievements.map((achievement) => (
               <div
                 key={achievement.id}
-                className={`p-4 rounded-lg border ${
-                  achievement.unlocked_at
-                    ? "bg-primary/10 border-primary/30"
-                    : "bg-muted/30 border-border opacity-60"
-                }`}
+                className={`p-4 rounded-lg border ${achievement.unlocked_at
+                  ? "bg-primary/10 border-primary/30"
+                  : "bg-muted/30 border-border opacity-60"
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   <div className="text-3xl" aria-hidden="true">{achievement.icon}</div>
