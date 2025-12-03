@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Mic, MicOff, Volume2, Send } from "lucide-react";
+import { ArrowLeft, Mic, MicOff, Volume2, Send, RotateCcw } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useVoiceInteraction } from "@/hooks/useVoiceInteraction";
@@ -19,6 +19,17 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const scenarioData = {
   entrevista: {
@@ -198,6 +209,14 @@ const Simulacion = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleTextSubmit();
+    }
+  };
+
+  const handleUndo = () => {
+    if (messages.length >= 2) {
+      setMessages((prev) => prev.slice(0, -2));
+      setResponseIndex((prev) => Math.max(0, prev - 1));
+      toast.info("Último intercambio deshecho");
     }
   };
 
@@ -400,12 +419,46 @@ const Simulacion = () => {
         <div className="max-w-4xl mx-auto space-y-6 py-4 md:py-8">
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/escenarios" aria-label="Volver a escenarios">
-                <Button variant="outline" size="icon" aria-label="Volver" className="rounded-full w-12 h-12 border-2">
-                  <ArrowLeft className="w-6 h-6" aria-hidden="true" />
-                </Button>
-              </Link>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="Volver" className="rounded-full w-12 h-12 border-2">
+                    <ArrowLeft className="w-6 h-6" aria-hidden="true" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Estás seguro de que quieres salir?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Si sales ahora, perderás el progreso de esta conversación.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => navigate("/escenarios")}>Salir</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{scenario.title}</h1>
+
+              {messages.length >= 2 && !isThinking && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleUndo}
+                      className="rounded-full hover:bg-secondary"
+                      aria-label="Deshacer último intercambio"
+                    >
+                      <RotateCcw className="w-5 h-5 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Deshacer último intercambio</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
 
             <div className="flex items-center gap-4">
@@ -636,14 +689,29 @@ const Simulacion = () => {
             </div>
           </div>
         </div>
-        <Button
-          onClick={handleFinish}
-          variant="outline"
-          className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
-          aria-label="Finalizar sesión y ver resultados"
-        >
-          Terminar conversación
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
+              aria-label="Finalizar sesión y ver resultados"
+            >
+              Terminar conversación
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Terminar conversación?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Se analizará la conversación hasta este punto y se generarán tus resultados.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleFinish}>Terminar</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   );
