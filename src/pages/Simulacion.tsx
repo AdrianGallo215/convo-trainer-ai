@@ -301,11 +301,20 @@ const Simulacion = () => {
       let confidence = 70;
       let fluency = 65;
       let tone = 70;
-      let recommendations: string[] = [
-        "Practica mantener contacto visual durante las conversaciones",
-        "Trabaja en reducir muletillas y pausas innecesarias",
-        "Ajusta tu tono según el contexto de la conversación",
-      ];
+      // Check if voice was used
+      const hasVoiceMessages = messages.some(m => m.role === 'user' && m.audioMetrics);
+
+      let recommendations: string[] = hasVoiceMessages
+        ? [
+          "Trabaja en reducir muletillas y pausas innecesarias",
+          "Ajusta tu tono para transmitir más seguridad",
+          "Intenta mantener un ritmo constante al hablar"
+        ]
+        : [
+          "Intenta expandir más tus respuestas para enriquecer la conversación",
+          "Haz preguntas abiertas para demostrar interés en el otro",
+          "Mantén un lenguaje claro y empático en todo momento"
+        ];
 
       if (user && messages.length > 0) {
         try {
@@ -346,6 +355,22 @@ const Simulacion = () => {
         }
       }
 
+      // Calculate Timing Score if there are voice messages
+      let timingScore: number | undefined = undefined;
+      const voiceMessages = messages.filter(m => m.role === 'user' && m.audioMetrics?.responseTimeMs !== undefined);
+
+      if (voiceMessages.length > 0) {
+        const totalResponseTime = voiceMessages.reduce((acc, msg) => acc + (msg.audioMetrics?.responseTimeMs || 0), 0);
+        const avgResponseTime = totalResponseTime / voiceMessages.length;
+
+        // Scoring logic: < 2s = 100, > 10s = 60
+        // Linear interpolation: 100 - ((avg - 2000) / 8000) * 40
+        const rawScore = 100 - ((avgResponseTime - 2000) / 8000) * 40;
+        timingScore = Math.round(Math.min(100, Math.max(60, rawScore)));
+
+        console.log(`Average Response Time: ${avgResponseTime}ms, Timing Score: ${timingScore}`);
+      }
+
       toast.dismiss();
 
       if (user) {
@@ -362,7 +387,7 @@ const Simulacion = () => {
         // Navigate to feedback with results
         navigate("/feedback", {
           state: {
-            scores: { confidence, fluency, tone },
+            scores: { confidence, fluency, tone, timing: timingScore },
             xpEarned,
             newAchievements,
             recommendations,
@@ -372,7 +397,7 @@ const Simulacion = () => {
         // Guest user
         navigate("/feedback", {
           state: {
-            scores: { confidence, fluency, tone },
+            scores: { confidence, fluency, tone, timing: timingScore },
             recommendations,
           },
         });
