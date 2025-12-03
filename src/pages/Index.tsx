@@ -47,35 +47,37 @@ const Index = () => {
           </div>
 
           {/* Hero Content Overlay */}
-          <div className="relative z-10 container mx-auto px-4 pt-32 pb-20 text-center space-y-8 flex-1 flex flex-col justify-center items-center bg-background/30 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none">
-            <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-primary/20 bg-background/80 text-primary backdrop-blur-md shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
-              Nuevo: Modo de alto contraste disponible
-            </div>
+          <div className="relative z-10 container mx-auto px-4 pt-32 pb-20 flex-1 flex flex-col justify-center items-center">
+            <div className="bg-background/80 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] max-w-5xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-700 text-center space-y-8">
+              <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-primary/20 bg-background/50 text-primary shadow-sm">
+                <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
+                Nuevo: Modo de alto contraste disponible
+              </div>
 
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground max-w-5xl mx-auto drop-shadow-sm">
-              Domina tus habilidades sociales con <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Inteligencia Artificial</span>
-            </h1>
+              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground drop-shadow-sm">
+                Domina tus habilidades sociales con <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Inteligencia Artificial</span>
+              </h1>
 
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-              Práctica realista para entrevistas, charlas casuales y presentaciones.
-              <br className="hidden md:block" />
-              Diseñado para todos, con herramientas de accesibilidad avanzadas.
-            </p>
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
+                Práctica realista para entrevistas, charlas casuales y presentaciones.
+                <br className="hidden md:block" />
+                Diseñado para todos, con herramientas de accesibilidad avanzadas.
+              </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 w-full max-w-md mx-auto">
-              <Link to="/escenarios" className="w-full">
-                <Button size="lg" className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 shadow-xl hover:shadow-primary/25 hover:-translate-y-1 transition-all rounded-2xl">
-                  Comenzar Ahora <ArrowRight className="ml-2 w-6 h-6" />
-                </Button>
-              </Link>
-              {!user && (
-                <Link to="/auth" className="w-full">
-                  <Button size="lg" variant="outline" className="w-full h-16 text-xl font-bold border-2 bg-background/50 backdrop-blur-md hover:bg-accent hover:text-accent-foreground rounded-2xl">
-                    Crear cuenta
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 w-full max-w-md mx-auto">
+                <Link to="/escenarios" className="w-full">
+                  <Button size="lg" className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 shadow-xl hover:shadow-primary/25 hover:-translate-y-1 transition-all rounded-2xl">
+                    Comenzar Ahora <ArrowRight className="ml-2 w-6 h-6" />
                   </Button>
                 </Link>
-              )}
+                {!user && (
+                  <Link to="/auth" className="w-full">
+                    <Button size="lg" variant="outline" className="w-full h-16 text-xl font-bold border-2 bg-background/50 backdrop-blur-md hover:bg-accent hover:text-accent-foreground rounded-2xl">
+                      Crear cuenta
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </section>
