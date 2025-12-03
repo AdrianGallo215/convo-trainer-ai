@@ -6,8 +6,8 @@ import { Header } from "@/components/Header";
 import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 import { FadeIn } from "@/components/FadeIn";
 
-const RiveSection = ({ src, height = "h-[500px]", children }: { src: string, height?: string, children?: React.ReactNode }) => {
-  const { RiveComponent } = useRive({
+const RiveSection = ({ src, height = "h-[500px]", children, animationName }: { src: string, height?: string, children?: React.ReactNode, animationName?: string }) => {
+  const { RiveComponent, rive } = useRive({
     src: src,
     autoplay: true,
     layout: new Layout({
@@ -15,6 +15,13 @@ const RiveSection = ({ src, height = "h-[500px]", children }: { src: string, hei
       alignment: Alignment.Center,
     }),
   });
+
+  useEffect(() => {
+    if (rive && animationName) {
+      rive.stop();
+      rive.play(animationName);
+    }
+  }, [rive, animationName]);
 
   return (
     <div className={`relative w-full ${height} overflow-hidden`}>
@@ -33,8 +40,23 @@ const RiveSection = ({ src, height = "h-[500px]", children }: { src: string, hei
   );
 };
 
+import { useState, useEffect } from "react";
+
 const Index = () => {
   const { user } = useAuth();
+  const [currentAnimation, setCurrentAnimation] = useState("bulbs");
+
+  useEffect(() => {
+    const animations = ["bulbs", "dots", "char"];
+    let currentIndex = 0;
+
+    const interval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % animations.length;
+      setCurrentAnimation(animations[currentIndex]);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">
@@ -44,7 +66,7 @@ const Index = () => {
         {/* 1. Talker Animation - Hero Section */}
         <section className="relative min-h-[90vh] flex flex-col">
           <div className="absolute inset-0 z-0">
-            <RiveSection src="/talker.riv" height="h-full" />
+            <RiveSection src="/talker.riv" height="h-full" animationName={currentAnimation} />
           </div>
 
           {/* Hero Content Overlay */}
