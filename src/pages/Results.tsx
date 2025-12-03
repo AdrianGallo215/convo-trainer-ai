@@ -31,7 +31,7 @@ const Results = () => {
         // Simulate processing time
         const timer = setTimeout(() => {
             setShowResult(true);
-        }, 3000);
+        }, 6_000);
 
         return () => clearTimeout(timer);
     }, []);
@@ -66,7 +66,7 @@ const Results = () => {
                                     Plan Personalizado
                                 </div>
                                 <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
-                                    Tu Escenario Ideal
+                                    Tu Escenario ideal
                                 </h1>
                                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                                     Basado en tu perfil, te recomendamos comenzar con este ejercicio para potenciar tus habilidades.
@@ -94,10 +94,10 @@ const Results = () => {
                                                 onClick={() => navigate(`/simulacion/${recommendedScenario.id}`)}
                                                 className="w-full h-14 text-lg font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-1"
                                             >
-                                                Comenzar Práctica <ArrowRight className="ml-2 w-5 h-5" />
+                                                Comenzar práctica <ArrowRight className="ml-2 w-5 h-5" />
                                             </Button>
                                             <p className="text-center text-sm text-muted-foreground mt-4">
-                                                Te tomará aproximadamente 5 minutos
+                                                Te tomará aproximadamente 15 minutos
                                             </p>
                                         </div>
                                     </div>
