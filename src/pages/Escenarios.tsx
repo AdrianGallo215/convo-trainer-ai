@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Briefcase, MessageCircle, Presentation } from "lucide-react";
 import { Header } from "@/components/Header";
 
-const scenarios = [
+export const scenarios = [
   {
     id: "entrevista",
     title: "Entrevista laboral",
@@ -71,7 +71,7 @@ const Escenarios = () => {
                   </div>
 
                   <Link to={`/simulacion/${scenario.id}`} className="block pt-2">
-                    <Button className="w-full h-14 text-lg font-medium bg-primary text-primary-foreground shadow-sm hover:shadow-md transition-all rounded-xl group-hover:bg-primary/90">
+                    <Button className="w-full h-14 text-lg font-medium bg-gradient-hero text-primary-foreground shadow-sm hover:shadow-md transition-all rounded-xl hover:opacity-90">
                       Practicar
                     </Button>
                   </Link>

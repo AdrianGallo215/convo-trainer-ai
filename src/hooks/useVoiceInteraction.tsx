@@ -17,6 +17,7 @@ interface UseVoiceInteractionReturn {
   speak: (text: string) => void;
   stopSpeaking: () => void;
   isSupported: boolean;
+  error: string | null;
 }
 
 export const useVoiceInteraction = ({
@@ -62,5 +63,6 @@ export const useVoiceInteraction = ({
     speak,
     stopSpeaking,
     isSupported: true, // APIs are supported
+    error: sttError || ttsError,
   };
 };
