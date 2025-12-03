@@ -4,6 +4,7 @@ import { Brain, MessageCircle, Target, Eye, Mic, Volume2, ArrowRight } from "luc
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { useRive, Layout, Fit, Alignment } from '@rive-app/react-canvas';
+import { FadeIn } from "@/components/FadeIn";
 
 const RiveSection = ({ src, height = "h-[500px]", children }: { src: string, height?: string, children?: React.ReactNode }) => {
   const { RiveComponent } = useRive({
@@ -48,49 +49,53 @@ const Index = () => {
 
           {/* Hero Content Overlay */}
           <div className="relative z-10 container mx-auto px-4 pt-32 pb-20 flex-1 flex flex-col justify-center items-center">
-            <div className="bg-background/80 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] max-w-5xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-700 text-center space-y-8">
-              <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-primary/20 bg-background/50 text-primary shadow-sm">
-                <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
-                Nuevo: Modo de alto contraste disponible
-              </div>
+            <FadeIn delay={200} className="w-full flex justify-center">
+              <div className="bg-background/80 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] max-w-5xl border border-white/10 shadow-2xl text-center space-y-8">
+                <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-primary/20 bg-background/50 text-primary shadow-sm">
+                  <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
+                  Nuevo: Modo de alto contraste disponible
+                </div>
 
-              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground drop-shadow-sm">
-                Domina tus habilidades sociales con <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Inteligencia Artificial</span>
-              </h1>
+                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground drop-shadow-sm">
+                  Domina tus habilidades sociales con <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Inteligencia Artificial</span>
+                </h1>
 
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-                Práctica realista para entrevistas, charlas casuales y presentaciones.
-                <br className="hidden md:block" />
-                Diseñado para todos, con herramientas de accesibilidad avanzadas.
-              </p>
+                <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
+                  Práctica realista para entrevistas, charlas casuales y presentaciones.
+                  <br className="hidden md:block" />
+                  Diseñado para todos, con herramientas de accesibilidad avanzadas.
+                </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 w-full max-w-md mx-auto">
-                <Link to="/escenarios" className="w-full">
-                  <Button size="lg" className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 shadow-xl hover:shadow-primary/25 hover:-translate-y-1 transition-all rounded-2xl">
-                    Comenzar Ahora <ArrowRight className="ml-2 w-6 h-6" />
-                  </Button>
-                </Link>
-                {!user && (
-                  <Link to="/auth" className="w-full">
-                    <Button size="lg" variant="outline" className="w-full h-16 text-xl font-bold border-2 bg-background/50 backdrop-blur-md hover:bg-accent hover:text-accent-foreground rounded-2xl">
-                      Crear cuenta
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 w-full max-w-md mx-auto">
+                  <Link to="/escenarios" className="w-full">
+                    <Button size="lg" className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 shadow-xl hover:shadow-primary/25 hover:-translate-y-1 transition-all rounded-2xl">
+                      Comenzar ahora <ArrowRight className="ml-2 w-6 h-6" />
                     </Button>
                   </Link>
-                )}
+                  {!user && (
+                    <Link to="/auth" className="w-full">
+                      <Button size="lg" variant="outline" className="w-full h-16 text-xl font-bold border-2 bg-background/50 backdrop-blur-md hover:bg-accent hover:text-accent-foreground rounded-2xl">
+                        Crear cuenta
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
+            </FadeIn>
           </div>
         </section>
 
         {/* Features Grid */}
         <section className="py-24 bg-secondary/30 relative overflow-hidden">
           <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center mb-20">
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">Diseñado para el aprendizaje efectivo</h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Nuestra metodología combina lo mejor de la psicología conductual con tecnología de punta.
-              </p>
-            </div>
+            <FadeIn direction="up">
+              <div className="text-center mb-20">
+                <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">Diseñado para el aprendizaje efectivo</h2>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Nuestra metodología combina lo mejor de la psicología conductual con tecnología de punta.
+                </p>
+              </div>
+            </FadeIn>
 
             <div className="grid md:grid-cols-3 gap-8">
               {[
@@ -113,15 +118,17 @@ const Index = () => {
                   color: "purple"
                 }
               ].map((feature, idx) => (
-                <div key={idx} className="group bg-card p-8 rounded-[2rem] shadow-lg border border-border/50 hover:shadow-2xl hover:border-primary/20 transition-all duration-300 hover:-translate-y-2">
-                  <div className={`w-16 h-16 rounded-2xl bg-${feature.color}-100 dark:bg-${feature.color}-900/30 flex items-center justify-center text-${feature.color}-600 dark:text-${feature.color}-400 mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                    {feature.icon}
+                <FadeIn key={idx} delay={idx * 200} direction="up">
+                  <div className="group bg-card p-8 rounded-[2rem] shadow-lg border border-border/50 hover:shadow-2xl hover:border-primary/20 transition-all duration-300 hover:-translate-y-2 h-full">
+                    <div className={`w-16 h-16 rounded-2xl bg-${feature.color}-100 dark:bg-${feature.color}-900/30 flex items-center justify-center text-${feature.color}-600 dark:text-${feature.color}-400 mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground mb-3">{feature.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      {feature.desc}
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-3">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed text-lg">
-                    {feature.desc}
-                  </p>
-                </div>
+                </FadeIn>
               ))}
             </div>
           </div>
@@ -130,50 +137,54 @@ const Index = () => {
         {/* 2. Hearts Animation - Emotional Connection / Accessibility */}
         <section className="relative w-full h-[600px] md:h-[800px] bg-black">
           <RiveSection src="/hearts.riv" height="h-full">
-            <div className="bg-background/80 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] max-w-4xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-700">
-              <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6">Accesibilidad primero</h2>
-              <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-8">
-                Creemos que la educación debe ser accesible para todos. Nuestra plataforma está construida siguiendo las pautas WCAG para garantizar una experiencia inclusiva y empática.
-              </p>
+            <FadeIn direction="up">
+              <div className="bg-background/80 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] max-w-4xl border border-white/10 shadow-2xl">
+                <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6">Accesibilidad primero</h2>
+                <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-8">
+                  Creemos que la educación debe ser accesible para todos. Nuestra plataforma está construida siguiendo las pautas WCAG para garantizar una experiencia inclusiva y empática.
+                </p>
 
-              <div className="grid md:grid-cols-2 gap-6 text-left">
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/50">
-                  <Eye className="w-8 h-8 text-primary" />
-                  <span className="font-medium text-lg">Alto contraste y texto ajustable</span>
+                <div className="grid md:grid-cols-2 gap-6 text-left">
+                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/50">
+                    <Eye className="w-8 h-8 text-primary" />
+                    <span className="font-medium text-lg">Alto contraste y texto ajustable</span>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/50">
+                    <Mic className="w-8 h-8 text-primary" />
+                    <span className="font-medium text-lg">Control por voz total</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/50">
-                  <Mic className="w-8 h-8 text-primary" />
-                  <span className="font-medium text-lg">Control por voz total</span>
+
+                <div className="mt-10">
+                  <Link to="/configuracion">
+                    <Button variant="outline" size="lg" className="h-14 px-8 text-lg rounded-xl border-2 hover:bg-foreground hover:text-background transition-colors">
+                      Explorar opciones de accesibilidad
+                    </Button>
+                  </Link>
                 </div>
               </div>
-
-              <div className="mt-10">
-                <Link to="/configuracion">
-                  <Button variant="outline" size="lg" className="h-14 px-8 text-lg rounded-xl border-2 hover:bg-foreground hover:text-background transition-colors">
-                    Explorar opciones de accesibilidad
-                  </Button>
-                </Link>
-              </div>
-            </div>
+            </FadeIn>
           </RiveSection>
         </section>
 
         {/* 3. Rocket Animation - Call to Action */}
         <section className="relative w-full h-[500px] md:h-[700px] bg-gradient-to-b from-background to-secondary/20">
           <RiveSection src="/rocket.riv" height="h-full">
-            <div className="bg-background/40 backdrop-blur-md p-12 rounded-[3rem] border border-white/20 shadow-xl max-w-3xl">
-              <h2 className="text-5xl md:text-7xl font-black text-foreground mb-6 tracking-tight">
-                ¿Listo para despegar?
-              </h2>
-              <p className="text-2xl text-muted-foreground mb-10 font-medium">
-                Únete a miles de estudiantes que ya están mejorando sus habilidades de comunicación hoy mismo.
-              </p>
-              <Link to="/escenarios">
-                <Button size="lg" className="h-20 px-12 text-2xl font-bold bg-primary hover:bg-primary/90 shadow-2xl hover:shadow-primary/50 hover:scale-105 transition-all rounded-full">
-                  Comenzar mi viaje gratis
-                </Button>
-              </Link>
-            </div>
+            <FadeIn direction="up">
+              <div className="bg-background/40 backdrop-blur-md p-12 rounded-[3rem] border border-white/20 shadow-xl max-w-3xl">
+                <h2 className="text-5xl md:text-7xl font-black text-foreground mb-6 tracking-tight">
+                  ¿Listo para comenzar?
+                </h2>
+                <p className="text-2xl  mb-10 font-medium">
+                  Únete a miles de estudiantes que ya están mejorando sus habilidades de comunicación hoy mismo.
+                </p>
+                <Link to="/escenarios">
+                  <Button size="lg" className="h-20 px-12 text-2xl font-bold bg-primary hover:bg-primary/90 shadow-2xl hover:shadow-primary/50 hover:scale-105 transition-all rounded-full">
+                    Comenzar ahora
+                  </Button>
+                </Link>
+              </div>
+            </FadeIn>
           </RiveSection>
         </section>
 
