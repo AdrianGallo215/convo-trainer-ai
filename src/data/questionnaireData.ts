@@ -39,93 +39,86 @@ export interface QuestionnaireItem {
 
 export const questionnaireData: QuestionnaireItem[] = [
     {
-        "id": "higher-pitched",
-        "name": "¿Una voz más aguda se alinearía mejor con su identidad?",
-        "type": "boolean"
-    },
-    {
-        "target": "target1",
-        "targetIndex": true,
-        "switch": [
+        "id": "goal",
+        "name": "¿Cuál es tu objetivo principal al usar Convo Trainer?",
+        "description": "Esto nos ayudará a personalizar tus ejercicios.",
+        "type": "checkbox",
+        "multiple": false,
+        "list": [
             {
-                "id": "talker-listener",
-                "name": "¿Eres más hablador o más oyente?",
-                "list": [
-                    {
-                        "icon": "💬",
-                        "title": "Hablador"
-                    },
-                    {
-                        "icon": "👂",
-                        "title": "Oyente"
-                    }
-                ]
+                "icon": "🚀",
+                "title": "Superar la ansiedad social"
             },
             {
-                "id": "trust-communication",
-                "targetIndex": 1,
-                "name": "¿Crees que la confianza y la comunicación son claves en las relaciones?",
-                "type": "boolean"
+                "icon": "💼",
+                "title": "Mejorar habilidades profesionales"
+            },
+            {
+                "icon": "🗣️",
+                "title": "Hablar con más fluidez"
+            },
+            {
+                "icon": "🤝",
+                "title": "Hacer amigos más fácilmente"
             }
         ]
     },
     {
-        "target": "target1",
-        "targetIndex": true,
+        "id": "anxiety-level",
+        "name": "En una escala del 1 al 10, ¿cuánta ansiedad sientes al hablar con desconocidos?",
+        "type": "boolean" // Using boolean type for simple choice structure for now, though logic is handled by AI
+    },
+    {
+        "id": "scenarios",
+        "name": "¿Qué situaciones te resultan más difíciles?",
+        "type": "checkbox",
+        "multiple": true,
+        "list": [
+            {
+                "icon": "👔",
+                "title": "Entrevistas de trabajo"
+            },
+            {
+                "icon": "🎤",
+                "title": "Hablar en público"
+            },
+            {
+                "icon": "💘",
+                "title": "Citas románticas"
+            },
+            {
+                "icon": "🎉",
+                "title": "Fiestas y eventos sociales"
+            }
+        ]
+    },
+    {
+        "id": "feedback-style",
+        "name": "¿Cómo prefieres recibir feedback?",
         "type": "boolean",
         "switch": [
             {
-                "id": "um-uh",
-                "name": "¿Palabras de relleno como 'eh' y 'um' aparecen frecuentemente en tu habla?"
-            },
-            {
-                "id": "brutally-relationships",
-                "targetIndex": 1,
-                "name": "¿Ser brutalmente honesto siempre es beneficioso en las relaciones?"
+                "id": "feedback-pref",
+                "name": "Estilo de corrección",
+                "list": [
+                    {
+                        "icon": "🛡️",
+                        "title": "Suave y motivador"
+                    },
+                    {
+                        "icon": "🎯",
+                        "title": "Directo y técnico"
+                    }
+                ]
             }
         ]
     },
     {
-        "id": "content",
-        "name": "¿Qué tipo de contenido te resulta útil?",
-        "description": "Entender mejor tu experiencia ayudará a que aproveches al máximo Vocal Image.",
-        "type": "checkbox",
-        "multiple": true,
-        "optional": true,
-        "list": [
-            {
-                "icon": "🎞",
-                "title": "Videos"
-            },
-            {
-                "icon": "🎙️",
-                "title": "Podcasts"
-            },
-            {
-                "icon": "📱",
-                "title": "Shorts"
-            },
-            {
-                "icon": "📰",
-                "title": "Artículos"
-            },
-            {
-                "icon": "📚",
-                "title": "Libros"
-            }
-        ]
-    },
-    {
-        "id": "native-speaker",
-        "name": "¿Eres hablante<br>nativo de español?",
-        "type": "boolean"
-    },
-    {
-        "description": "Procesamiento preliminar...",
+        "description": "Generando tu plan personalizado...",
         "type": "progress",
         "rive": {
             "src": "data_proccessing_loader.riv",
-            "stateMachines": "data_proccessing_loader", // ← Changed from "State Machine 1" to match actual name
+            "stateMachines": "data_proccessing_loader",
             "width": 350,
             "height": 284
         }
