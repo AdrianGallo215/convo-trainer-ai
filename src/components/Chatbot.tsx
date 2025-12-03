@@ -211,7 +211,7 @@ const Chatbot = () => {
                                                             onClick={() => navigate(messageData.link)}
                                                             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                                                         >
-                                                            Ver Resultados
+                                                            Ver resultados
                                                         </Button>
                                                     </div>
                                                 )}
