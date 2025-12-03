@@ -180,7 +180,7 @@ const Simulacion = () => {
         }
       } catch (error) {
         console.error("Error getting AI response:", error);
-        toast.error("Error al obtener respuesta de la IA");
+        toast.error("No pudimos conectar con el asistente");
         setIsThinking(false);
       }
     },
@@ -220,7 +220,7 @@ const Simulacion = () => {
   }, [speak]);
 
   if (!scenario) {
-    return <div>Escenario no encontrado</div>;
+    return <div>Conversación no disponible</div>;
   }
 
   const [hasStarted, setHasStarted] = useState(false);
@@ -415,7 +415,7 @@ const Simulacion = () => {
                   role="status"
                   aria-live="polite"
                 >
-                  Voz no disponible
+                  Micrófono no detectado
                 </div>
               )}
             </div>
@@ -586,7 +586,7 @@ const Simulacion = () => {
             aria-label="Entrada de texto alternativa"
           >
             <Label htmlFor="text-input" className="text-sm font-medium mb-2 block">
-              Escribe tu respuesta (alternativa al micrófono)
+              Responder
             </Label>
             <div className="flex gap-2">
               <Tooltip>
@@ -642,7 +642,7 @@ const Simulacion = () => {
           className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
           aria-label="Finalizar sesión y ver resultados"
         >
-          Finalizar
+          Terminar conversación
         </Button>
       </main>
     </div>
