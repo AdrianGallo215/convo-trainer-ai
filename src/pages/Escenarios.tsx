@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Briefcase, MessageCircle, Presentation } from "lucide-react";
 import { Header } from "@/components/Header";
 
-const scenarios = [
+export const scenarios = [
   {
     id: "entrevista",
     title: "Entrevista laboral",
