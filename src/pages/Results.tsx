@@ -63,10 +63,10 @@ const Results = () => {
                             <div className="text-center mb-12 space-y-4">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm uppercase tracking-wider shadow-sm border border-primary/20">
                                     <Sparkles className="w-4 h-4" />
-                                    Plan Personalizado
+                                    Plan personalizado
                                 </div>
                                 <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
-                                    Tu Escenario ideal
+                                    Tu escenario ideal
                                 </h1>
                                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                                     Basado en tu perfil, te recomendamos comenzar con este ejercicio para potenciar tus habilidades.
