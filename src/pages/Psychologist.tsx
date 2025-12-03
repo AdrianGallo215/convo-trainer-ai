@@ -178,7 +178,7 @@ export default function PsychologistPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Buscar Pacientes</CardTitle>
+            <CardTitle>Directorio de Pacientes</CardTitle>
             <CardDescription>Encuentra pacientes por nombre</CardDescription>
           </CardHeader>
           <CardContent>
@@ -270,7 +270,7 @@ export default function PsychologistPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Activity className="w-5 h-5" />
-                    Estadísticas de Desempeño
+                    Resumen de Progreso
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
