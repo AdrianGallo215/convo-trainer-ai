@@ -206,7 +206,7 @@ export default function PsychologistPage() {
                 <div
                   key={patient.id}
                   onClick={() => openPatient(patient.id)}
-                  className={`p-4 rounded-lg border cursor-pointer transition-colors hover:bg-secondary/50 ${selectedPatient === patient.id ? "bg-secondary border-primary" : "bg-card"
+                  className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md hover:bg-secondary/50 ${selectedPatient === patient.id ? "bg-secondary border-primary" : "bg-card"
                     }`}
                 >
                   <div className="flex items-center justify-between">

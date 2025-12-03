@@ -144,8 +144,8 @@ const ModeratorPage = () => {
       <div className="max-w-6xl mx-auto space-y-6 py-4 md:py-8">
         <header className="flex items-center gap-4">
           <Link to="/" aria-label="Volver a inicio">
-            <Button variant="outline" size="icon" aria-label="Volver">
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            <Button variant="outline" size="icon" aria-label="Volver" className="rounded-full w-12 h-12 border-2">
+              <ArrowLeft className="w-6 h-6" aria-hidden="true" />
             </Button>
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">Panel de Moderador</h1>
@@ -167,7 +167,7 @@ const ModeratorPage = () => {
                   <button
                     key={p.id}
                     onClick={() => openPatient(p)}
-                    className={`w-full text-left p-3 rounded-lg border ${selectedPatient?.id === p.id ? 'bg-primary/10 border-primary/30' : 'bg-card'}`}
+                    className={`w-full text-left p-3 rounded-lg border transition-all hover:shadow-md ${selectedPatient?.id === p.id ? 'bg-primary/10 border-primary/30' : 'bg-card hover:bg-secondary/50'}`}
                   >
                     <div className="font-medium">{p.full_name || p.username || "Usuario sin nombre"}</div>
                     <div className="text-sm text-muted-foreground">{p.username}</div>
