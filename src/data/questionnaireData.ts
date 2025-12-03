@@ -83,12 +83,8 @@ export const questionnaireData: QuestionnaireItem[] = [
                 "title": "Hablar en público"
             },
             {
-                "icon": "💘",
-                "title": "Citas románticas"
-            },
-            {
                 "icon": "🎉",
-                "title": "Fiestas y eventos sociales"
+                "title": "Fiestas y/o eventos sociales"
             }
         ]
     },
@@ -103,7 +99,7 @@ export const questionnaireData: QuestionnaireItem[] = [
                 "list": [
                     {
                         "icon": "🛡️",
-                        "title": "Suave y motivador"
+                        "title": "Simple y motivador"
                     },
                     {
                         "icon": "🎯",
