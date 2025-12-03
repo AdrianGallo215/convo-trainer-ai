@@ -18,6 +18,8 @@ const groq = new Groq({
 interface Message {
     role: 'user' | 'assistant' | 'system';
     content: string;
+    options?: string[];
+    link?: string;
 }
 
 const Chatbot = () => {
@@ -36,65 +38,55 @@ const Chatbot = () => {
         }
     }, [messages, isOpen]);
 
-    // Initial greeting
-    useEffect(() => {
-        if (isOpen && !hasStarted) {
-            setHasStarted(true);
-            const systemPrompt = `
-                You are a helpful, friendly, and professional AI assistant for "Vocal Image", a communication training app.
-                Your goal is to guide the user through a short questionnaire to understand their needs.
-                
-                Here is the questionnaire data you need to cover:
-                ${JSON.stringify(questionnaireData)}
-                
-                Rules:
-                1. Ask questions one by one or in very small logical groups.
-                2. Be conversational and empathetic.
-                3. Do NOT ask for the "id" or technical details, just the "name" or concept.
-                4. When you have enough information or have covered the main points, thank the user and tell them you have prepared a personalized plan.
-                5. CRITICAL: At the very end, provide a markdown link exactly like this: [Ver Resultados](/results).
-                6. Keep responses concise.
-            `;
-
-            setMessages([
-                { role: 'system', content: systemPrompt },
-                { role: 'assistant', content: '¡Hola! Soy tu asistente de Vocal Image. Me gustaría hacerte unas breves preguntas para personalizar tu experiencia. ¿Te parece bien?' }
-            ]);
-        }
-    }, [isOpen, hasStarted]);
-
-    const handleSend = async () => {
-        if (!input.trim()) return;
-
-        const userMsg: Message = { role: 'user', content: input };
+    const handleOptionClick = (option: string) => {
+        const userMsg: Message = { role: 'user', content: option };
         setMessages(prev => [...prev, userMsg]);
-        setInput('');
-        setIsLoading(true);
+        sendMessage(option, [...messages, userMsg]);
+    };
 
+    const sendMessage = async (msgContent: string, currentMessages: Message[]) => {
+        setIsLoading(true);
         try {
             const chatCompletion = await groq.chat.completions.create({
-                messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content })),
-                model: 'llama-3.1-8b-instant', // Fast and efficient
-                temperature: 0.7,
+                messages: currentMessages.map(m => ({ role: m.role, content: m.content })),
+                model: 'llama-3.1-8b-instant',
+                temperature: 0.5, // Lower temperature for more deterministic JSON
                 max_tokens: 1024,
+                response_format: { type: "json_object" } // Force JSON mode
             });
 
-            const botResponse = chatCompletion.choices[0]?.message?.content || "Lo siento, tuve un problema. ¿Podemos intentar de nuevo?";
+            const contentStr = chatCompletion.choices[0]?.message?.content || "{}";
+            let parsedContent: { message: string; options?: string[]; link?: string } = { message: "Lo siento, hubo un error.", options: [] };
 
-            setMessages(prev => [...prev, { role: 'assistant', content: botResponse }]);
-
-            // Check for navigation link in response (simple client-side check)
-            if (botResponse.includes('(/progress)')) {
-                // Optional: Auto-redirect after a delay? 
-                // For now, let the user click the link rendered in the UI.
+            try {
+                parsedContent = JSON.parse(contentStr);
+            } catch (e) {
+                console.error("JSON Parse Error", e);
+                // Fallback if not JSON
+                parsedContent = { message: contentStr, options: [] };
             }
+
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: parsedContent.message,
+                options: parsedContent.options,
+                link: parsedContent.link
+            } as Message]);
 
         } catch (error) {
             console.error("Groq Error:", error);
-            setMessages(prev => [...prev, { role: 'assistant', content: "Lo siento, hubo un error de conexión. Por favor verifica tu conexión a internet." }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: "Error de conexión. Verifique su internet." }]);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSend = () => {
+        if (!input.trim()) return;
+        const userMsg: Message = { role: 'user', content: input };
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+        sendMessage(input, [...messages, userMsg]);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -106,7 +98,6 @@ const Chatbot = () => {
 
     // Helper to render message content with links
     const renderContent = (content: string) => {
-        // Simple regex to detect markdown links [text](url)
         const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
         const parts = [];
         let lastIndex = 0;
@@ -122,7 +113,7 @@ const Chatbot = () => {
                 <span
                     key={match.index}
                     onClick={() => navigate(url)}
-                    className="text-primary underline cursor-pointer hover:text-primary/80 font-bold"
+                    className="text-primary underline cursor-pointer hover:text-primary/80 font-bold mx-1"
                 >
                     {text}
                 </span>
@@ -135,55 +126,118 @@ const Chatbot = () => {
         return parts.length > 0 ? parts : content;
     };
 
+    // Initial greeting with updated prompt
+    useEffect(() => {
+        if (isOpen && !hasStarted) {
+            setHasStarted(true);
+            const systemPrompt = `
+                You are a helpful, friendly, and professional AI assistant for "ConvoTrainerAI".
+                Your goal is to guide the user through a short questionnaire.
+                
+                Data: ${JSON.stringify(questionnaireData)}
+                
+                OUTPUT FORMAT:
+                You must ALWAYS respond with a valid JSON object with this structure:
+                {
+                    "message": "Your response text here",
+                    "options": ["Option 1", "Option 2"], // Optional, include if question has choices
+                    "link": "/results" // Optional, ONLY include this EXACT path when the questionnaire is finished
+                }
+
+                Rules:
+                1. Language: SPANISH ONLY.
+                2. Be concise and friendly.
+                3. If the user finishes, set "link": "/results" in the JSON and say goodbye in "message".
+            `;
+
+            setMessages([
+                { role: 'system', content: systemPrompt },
+                {
+                    role: 'assistant',
+                    content: '¡Hola! Soy tu asistente de ConvoTrainerAI. ¿Listo para comenzar?',
+                    options: ['Sí, estoy listo', 'Más tarde']
+                } as Message
+            ]);
+        }
+    }, [isOpen, hasStarted]);
+
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-4 font-sans">
             {/* Chat Window */}
             {isOpen && (
-                <Card className="w-[380px] h-[600px] shadow-2xl border-none rounded-3xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-10 fade-in duration-300 bg-background/95 backdrop-blur-md ring-1 ring-white/10">
-                    <CardHeader className="bg-primary/10 p-4 flex flex-row items-center justify-between border-b border-white/5">
+                <Card className="w-[380px] md:w-[420px] h-[600px] shadow-2xl border-none rounded-3xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-10 fade-in duration-300 bg-background/95 backdrop-blur-md ring-1 ring-white/10">
+                    <CardHeader className="bg-primary p-4 flex flex-row items-center justify-between text-primary-foreground shadow-md">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center shadow-lg">
+                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
                                 <Sparkles className="w-5 h-5 text-white" />
                             </div>
                             <div>
                                 <CardTitle className="text-lg font-bold">Asistente IA</CardTitle>
-                                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                <p className="text-xs text-primary-foreground/80 flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                                     En línea
                                 </p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="rounded-full hover:bg-black/5 dark:hover:bg-white/10">
+                        <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="rounded-full hover:bg-white/20 text-primary-foreground">
                             <X className="w-5 h-5" />
                         </Button>
                     </CardHeader>
 
-                    <CardContent className="flex-1 p-0 flex flex-col overflow-hidden bg-gradient-to-b from-transparent to-black/5 dark:to-white/5">
+                    <CardContent className="flex-1 p-0 flex flex-col overflow-hidden bg-muted/30">
                         <ScrollArea className="flex-1 p-4">
-                            <div className="space-y-4">
-                                {messages.filter(m => m.role !== 'system').map((msg, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={cn(
-                                            "flex w-full",
-                                            msg.role === 'user' ? "justify-end" : "justify-start"
-                                        )}
-                                    >
-                                        <div
-                                            className={cn(
-                                                "max-w-[85%] p-3 rounded-2xl text-sm shadow-sm",
-                                                msg.role === 'user'
-                                                    ? "bg-primary text-primary-foreground rounded-tr-none"
-                                                    : "bg-muted/80 backdrop-blur-sm text-foreground rounded-tl-none border border-white/10"
+                            <div className="space-y-6">
+                                {messages.filter(m => m.role !== 'system').map((msg, idx) => {
+                                    const isUser = msg.role === 'user';
+                                    // Cast to any to access custom properties safely for rendering
+                                    const messageData = msg as any;
+
+                                    return (
+                                        <div key={idx} className={cn("flex w-full flex-col gap-2", isUser ? "items-end" : "items-start")}>
+                                            <div
+                                                className={cn(
+                                                    "max-w-[85%] p-4 rounded-2xl text-base shadow-sm",
+                                                    isUser
+                                                        ? "bg-primary text-primary-foreground rounded-tr-none"
+                                                        : "bg-card text-card-foreground border border-border rounded-tl-none"
+                                                )}
+                                            >
+                                                {renderContent(messageData.content)}
+
+                                                {/* Render Link if present */}
+                                                {messageData.link && (
+                                                    <div className="mt-3 pt-3 border-t border-border/50">
+                                                        <Button
+                                                            onClick={() => navigate(messageData.link)}
+                                                            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                                                        >
+                                                            Ver Resultados
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Render Options if Assistant */}
+                                            {!isUser && messageData.options && messageData.options.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mt-1 w-full max-w-[85%]">
+                                                    {messageData.options.map((opt: string, i: number) => (
+                                                        <Button
+                                                            key={i}
+                                                            variant="outline"
+                                                            onClick={() => handleOptionClick(opt)}
+                                                            className="text-xs font-medium rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary hover:border-primary/50 transition-all"
+                                                        >
+                                                            {opt}
+                                                        </Button>
+                                                    ))}
+                                                </div>
                                             )}
-                                        >
-                                            {renderContent(msg.content)}
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 {isLoading && (
                                     <div className="flex justify-start w-full">
-                                        <div className="bg-muted/50 p-3 rounded-2xl rounded-tl-none flex items-center gap-2">
+                                        <div className="bg-muted p-3 rounded-2xl rounded-tl-none flex items-center gap-2">
                                             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                                             <span className="text-xs text-muted-foreground">Escribiendo...</span>
                                         </div>
@@ -193,14 +247,14 @@ const Chatbot = () => {
                             </div>
                         </ScrollArea>
 
-                        <div className="p-4 bg-background/50 border-t border-white/5 backdrop-blur-sm">
-                            <div className="relative flex items-center">
+                        <div className="p-4 bg-background border-t border-border">
+                            <div className="relative flex items-center gap-2">
                                 <Input
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Escribe tu respuesta..."
-                                    className="pr-12 py-6 rounded-full border-white/10 bg-white/5 focus:bg-white/10 transition-all shadow-inner"
+                                    className="pr-12 py-6 rounded-full bg-muted/50 border-transparent focus:bg-background focus:border-primary/20 transition-all shadow-sm"
                                     disabled={isLoading}
                                 />
                                 <Button
@@ -221,9 +275,9 @@ const Chatbot = () => {
             {!isOpen && (
                 <Button
                     onClick={() => setIsOpen(true)}
-                    className="w-16 h-16 rounded-full shadow-2xl bg-gradient-to-tr from-primary to-purple-600 hover:scale-110 transition-all duration-300 animate-in zoom-in hover:shadow-primary/50"
+                    className="w-16 h-16 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-110 transition-all duration-300 animate-in zoom-in hover:shadow-primary/50"
                 >
-                    <MessageCircle className="w-8 h-8 text-white" />
+                    <MessageCircle className="w-8 h-8" />
                 </Button>
             )}
         </div>
