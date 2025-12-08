@@ -1,26 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { groq } from '../../../src/lib/groq.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-export async function getGroqChatCompletion(messages: any[], systemPrompt: string) {
-
-  const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...messages
-    ],
-    temperature: 0.7,
-    max_tokens: 500,
-  });
-
-  return response;
-}
-
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -29,6 +12,12 @@ serve(async (req) => {
 
   try {
     const { messages, scenarioType } = await req.json();
+
+    const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
+    if (!GROQ_API_KEY) {
+      console.error('GROQ_API_KEY is not configured');
+      throw new Error('GROQ_API_KEY is not configured');
+    }
 
     // System prompts personalizados según el tipo de escenario
     const systemPrompts: Record<string, string> = {
@@ -59,16 +48,31 @@ serve(async (req) => {
     console.log(`Processing chat for scenario: ${scenarioType}`);
     console.log(`Messages count: ${messages.length}`);
 
-    const completion = await getGroqChatCompletion(messages, systemPrompt);
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      }),
+    });
 
-    // if (!completion) {
-    //   console.error('Groq API error:', errorText);
-    //   throw new Error(`Groq API error: }`);
-    // }
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Groq API error: ${response.status} ${errorText}`);
+      throw new Error(`Groq API error: ${response.status}`);
+    }
 
-    console.log("Groq response: ", completion);
-
-    const aiResponse = completion.choices[0]?.message?.content || "Lo siento, no pude generar una respuesta.";
+    const data = await response.json();
+    const aiResponse = data.choices[0]?.message?.content || "Lo siento, no pude generar una respuesta.";
 
     console.log(`AI Response generated: ${aiResponse.substring(0, 50)}...`);
 
