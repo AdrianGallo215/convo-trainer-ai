@@ -173,7 +173,9 @@ const Simulacion = () => {
           },
         });
 
-        if (error) throw error;
+        console.log("Groq response: ", data);
+
+        //if (error) throw error;
 
         const aiResponse = data.response;
         setMessages((prev) => [...prev, { role: "ai" as const, text: aiResponse }]);
@@ -339,6 +341,7 @@ const Simulacion = () => {
 
             // Log explanations to console
             if (data.explanations) {
+              console.log("Data en crudo de Groq: ", data);
               console.log("=== ANÁLISIS DE GROQ ===");
               console.log(`\n📊 CONFIANZA: ${confidence}/100`);
               console.log(`Explicación: ${data.explanations.confidence}`);
