@@ -15,35 +15,43 @@ import Progress from "./pages/Progress";
 import Moderator from "./pages/Moderator";
 import Psychologist from "./pages/Psychologist";
 import Configuracion from "./pages/Configuracion";
+import PreviousConversations from "./pages/PreviousConversations";
+import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
+import Chatbot from "./components/Chatbot";
+import PastConversation from "./pages/PastConversation";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/escenarios" element={<ProtectedRoute><Escenarios /></ProtectedRoute>} />
-              <Route path="/simulacion/:tipo" element={<ProtectedRoute><Simulacion /></ProtectedRoute>} />
-              <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
-              <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
-              <Route path="/moderator" element={<ProtectedRoute><Moderator /></ProtectedRoute>} />
-              <Route path="/psychologist" element={<ProtectedRoute><Psychologist /></ProtectedRoute>} />
-              <Route path="/configuracion" element={<Configuracion />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </ThemeProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+    <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+                <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+                    <AuthProvider>
+                        <Toaster />
+                        <Sonner />
+                        <Chatbot />
+                        <Routes>
+                            <Route path="/" element={<Index />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/escenarios" element={<ProtectedRoute><Escenarios /></ProtectedRoute>} />
+                            <Route path="/simulacion/:tipo" element={<ProtectedRoute><Simulacion /></ProtectedRoute>} />
+                            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+                            <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+                            <Route path="/previous-conversations" element={<ProtectedRoute><PreviousConversations /></ProtectedRoute>} />
+                            <Route path="/previous-conversations/:id" element={<ProtectedRoute><PastConversation /></ProtectedRoute>} />
+                            <Route path="/moderator" element={<ProtectedRoute><Moderator /></ProtectedRoute>} />
+                            <Route path="/psychologist" element={<ProtectedRoute><Psychologist /></ProtectedRoute>} />
+                            <Route path="/results" element={<Results />} />
+                            <Route path="/configuracion" element={<Configuracion />} />
+                            <Route path="*" element={<NotFound />} />
+                        </Routes>
+                    </AuthProvider>
+                </ThemeProvider>
+            </TooltipProvider>
+        </QueryClientProvider>
+    </BrowserRouter>
 );
 
 export default App;

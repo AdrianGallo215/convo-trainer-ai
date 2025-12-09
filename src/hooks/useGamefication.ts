@@ -8,6 +8,12 @@ interface SessionData {
   fluencyScore: number;
   toneScore: number;
   durationSeconds: number;
+
+  title?: string;
+  // lo modifico luego
+  messages: any[];
+  recommendations: string[];
+  timingScore?: number;
 }
 
 export const useGamefication = () => {
@@ -18,7 +24,23 @@ export const useGamefication = () => {
     return baseXP + bonusXP;
   };
 
+  const generateSummary = async (messages, tipo) => {
+    const { data, error } = await supabase.functions.invoke("groq-comment", {
+      body: {
+        messages: messages, // Pasas tu array de mensajes
+        scenarioType: tipo  // 'entrevista', 'casual', etc.
+      },
+    });
+
+    if (data?.summary) {
+      return data.summary; // Retorna ej: "Entrevista fluida donde el candidato mostró gran confianza al hablar de sus debilidades."
+    }
+    return "Sesión de práctica completada.";
+  };
+  
   const saveSession = async (sessionData: SessionData) => {
+    console.log("Guardando sesión para el usuario:", sessionData.userId);
+    console.log("Guardando sesión para el usuario:", sessionData);
     try {
       const xpEarned = calculateXP(
         sessionData.confidenceScore,
@@ -26,6 +48,17 @@ export const useGamefication = () => {
         sessionData.toneScore
       );
 
+      const shortDescription = await generateSummary(sessionData.messages, sessionData.scenarioType);
+
+      console.log("Generated short description:", shortDescription);
+
+      // Preparar el objeto de feedback para guardar en el JSON
+      const feedbackJson = {
+        recommendations: sessionData.recommendations || [],
+        timing_score: sessionData.timingScore || 0
+      };
+
+      const description = `Sesión de ${sessionData.scenarioType} guardada automáticamente`;
       // Save session record
       const { error: sessionError } = await supabase
         .from("user_sessions")
@@ -37,6 +70,14 @@ export const useGamefication = () => {
           tone_score: sessionData.toneScore,
           duration_seconds: sessionData.durationSeconds,
           xp_earned: xpEarned,
+
+          /*
+          // Nuevos campos
+          title: sessionData.title || sessionData.scenarioType,
+          description,
+          messages: sessionData.messages, // importante para ver chats antiguos
+          feedback: feedbackJson
+          */
         });
 
       if (sessionError) throw sessionError;
