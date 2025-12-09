@@ -86,9 +86,11 @@ const Feedback = () => {
   const { user } = useAuth();
   const location = useLocation();
   const state = location.state as {
+    // timing es
     scores?: { confidence: number; fluency: number; tone: number; timing?: number };
     xpEarned?: number;
     newAchievements?: Achievement[];
+    // con IA
     recommendations?: string[];
   } | null;
 

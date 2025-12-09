@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.groq-analyze]
 verify_jwt = false
+
+[functions.groq-comment]
+verify_jwt = false

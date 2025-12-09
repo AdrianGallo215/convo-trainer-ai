@@ -92,10 +92,19 @@ const PreviousConversations = () => {
                                     </div>
 
                                     <div className="flex gap-4">
+                                        <Link to={`./${conversation.id}`}>
+                                            <Button variant="outline" size="sm" className="gap-2">
+                                                <MessageSquare className="w-4 h-4" />
+                                                Ver Transcripción
+                                            </Button>
+                                        </Link>
+                                        {
+                                        /*
                                         <Button variant="outline" size="sm" className="gap-2">
                                             <MessageSquare className="w-4 h-4" />
                                             Ver Transcripción
                                         </Button>
+                                        */}
                                     </div>
                                 </div>
 
