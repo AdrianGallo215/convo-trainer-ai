@@ -8,11 +8,10 @@ interface SessionData {
   fluencyScore: number;
   toneScore: number;
   durationSeconds: number;
-
   title?: string;
-  // lo modifico luego
-  messages: any[];
-  recommendations: string[];
+  description?: string;
+  messages?: any[];
+  recommendations?: string[];
   timingScore?: number;
 }
 

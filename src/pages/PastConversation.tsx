@@ -68,7 +68,7 @@ const { data: sessionData, isLoading, error } = useQuery({
       const { data, error } = await supabase
         .from('user_sessions')
         .select('*') // Asegúrate de que esto traiga la columna de los mensajes
-        .eq('id', id as string)
+        .eq('id', String(id))
         .single();
 
       if (error) throw error;
