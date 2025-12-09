@@ -147,10 +147,15 @@ export type Database = {
           completed_at: string
           confidence_score: number | null
           created_at: string
+          description: string | null
           duration_seconds: number | null
           fluency_score: number | null
           id: string
+          messages: Json | null
+          recommendations: Json | null
           scenario_type: string
+          timing_score: number | null
+          title: string | null
           tone_score: number | null
           user_id: string
           xp_earned: number
@@ -159,10 +164,15 @@ export type Database = {
           completed_at?: string
           confidence_score?: number | null
           created_at?: string
+          description?: string | null
           duration_seconds?: number | null
           fluency_score?: number | null
           id?: string
+          messages?: Json | null
+          recommendations?: Json | null
           scenario_type: string
+          timing_score?: number | null
+          title?: string | null
           tone_score?: number | null
           user_id: string
           xp_earned?: number
@@ -171,10 +181,15 @@ export type Database = {
           completed_at?: string
           confidence_score?: number | null
           created_at?: string
+          description?: string | null
           duration_seconds?: number | null
           fluency_score?: number | null
           id?: string
+          messages?: Json | null
+          recommendations?: Json | null
           scenario_type?: string
+          timing_score?: number | null
+          title?: string | null
           tone_score?: number | null
           user_id?: string
           xp_earned?: number
