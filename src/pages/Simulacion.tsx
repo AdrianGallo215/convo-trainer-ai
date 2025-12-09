@@ -68,6 +68,7 @@ const Simulacion = () => {
   const { tipo } = useParams<{ tipo: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  console.log("Usuario en Simulacion:", user);
   const { saveSession } = useGamefication();
   const [messages, setMessages] = useState<Array<{ role: "user" | "ai"; text: string; audioMetrics?: AudioMetrics }>>(
     [],
@@ -385,6 +386,12 @@ const Simulacion = () => {
           fluencyScore: fluency,
           toneScore: tone,
           durationSeconds,
+
+          // nuevos
+          title: scenario.title, 
+          messages: messages,           // Pasas el estado messages completo
+          recommendations: recommendations, 
+          timingScore: timingScore
         });
 
         // Navigate to feedback with results

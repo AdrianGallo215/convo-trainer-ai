@@ -19,6 +19,7 @@ import PreviousConversations from "./pages/PreviousConversations";
 import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 import Chatbot from "./components/Chatbot";
+import PastConversation from "./pages/PastConversation";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
                             <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
                             <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
                             <Route path="/previous-conversations" element={<ProtectedRoute><PreviousConversations /></ProtectedRoute>} />
+                            <Route path="/previous-conversations/:id" element={<ProtectedRoute><PastConversation /></ProtectedRoute>} />
                             <Route path="/moderator" element={<ProtectedRoute><Moderator /></ProtectedRoute>} />
                             <Route path="/psychologist" element={<ProtectedRoute><Psychologist /></ProtectedRoute>} />
                             <Route path="/results" element={<Results />} />
