@@ -230,7 +230,7 @@ const Index = () => {
 
             {[
               { title: "Plataforma", links: [{ l: "Escenarios", u: "/escenarios" }, { l: "Progreso", u: "/progress" }, { l: "Accesibilidad", u: "/configuracion" }] },
-              { title: "Legal", links: [{ l: "Privacidad", u: "#" }, { l: "Términos", u: "#" }] },
+              { title: "Legal", links: [{ l: "Privacidad", u: "/privacidad" }, { l: "Términos", u: "/terminos" }] },
               { title: "Contacto", links: [{ l: "soporte@convotrainer.ai", u: "#" }, { l: "Universidad Nacional de Ingeniería", u: "#" }] }
             ].map((col, idx) => (
               <div key={idx}>

@@ -20,6 +20,8 @@ import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 import Chatbot from "./components/Chatbot";
 import PastConversation from "./pages/PastConversation";
+import Privacidad from "./pages/Privacidad";
+import Terminos from "./pages/Terminos";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,8 @@ const App = () => (
                             <Route path="/moderator" element={<ProtectedRoute><Moderator /></ProtectedRoute>} />
                             <Route path="/psychologist" element={<ProtectedRoute><Psychologist /></ProtectedRoute>} />
                             <Route path="/results" element={<Results />} />
+                            <Route path="/privacidad" element={<Privacidad />} />
+                            <Route path="/terminos" element={<Terminos />} />
                             <Route path="/configuracion" element={<Configuracion />} />
                             <Route path="*" element={<NotFound />} />
                         </Routes>
