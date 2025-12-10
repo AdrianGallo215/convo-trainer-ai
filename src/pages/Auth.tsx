@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Brain, Loader2, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -25,6 +27,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [signupData, setSignupData] = useState({ email: "", password: "", fullName: "" });
   const [signinData, setSigninData] = useState({ email: "", password: "" });
+  const [isPsychologist, setIsPsychologist] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +45,16 @@ const Auth = () => {
           toast.error(error.message || "Error al crear cuenta");
         }
       } else {
+        // If registering as psychologist, add the role
+        if (isPsychologist) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from('user_roles').insert({
+              user_id: user.id,
+              role: 'psychologist'
+            });
+          }
+        }
         toast.success("¡Cuenta creada exitosamente! Bienvenido.");
       }
     } catch (error) {
@@ -183,6 +196,20 @@ const Auth = () => {
                   />
                   <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>
                 </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 text-primary" />
+                    <Label htmlFor="psychologist-toggle" className="text-sm font-medium cursor-pointer">
+                      Soy psicólogo/a
+                    </Label>
+                  </div>
+                  <Switch
+                    id="psychologist-toggle"
+                    checked={isPsychologist}
+                    onCheckedChange={setIsPsychologist}
+                    disabled={isLoading}
+                  />
+                </div>
                 <Button type="submit" className="w-full h-12 bg-gradient-hero" disabled={isLoading}>
                   {isLoading ? (
                     <>
@@ -190,7 +217,7 @@ const Auth = () => {
                       Creando cuenta...
                     </>
                   ) : (
-                    "Crear Cuenta"
+                    isPsychologist ? "Crear Cuenta de Psicólogo" : "Crear Cuenta"
                   )}
                 </Button>
               </form>
