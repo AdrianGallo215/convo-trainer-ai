@@ -7,6 +7,10 @@ import { Header } from "@/components/Header";
 import { useVoiceInteraction } from "@/hooks/useVoiceInteraction"; 
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { Json } from "@/integrations/supabase/types";
+import { get } from "http";
+import { getChatTitle } from "@/lib/utils";
 
 // --- 1. DEFINICIÓN DE TIPOS ---
 interface Message {
@@ -54,34 +58,33 @@ const DEMO_MESSAGES: Message[] = [
 // --- 3. COMPONENTE ---
 const PastConversation = ({ 
   // Usamos los datos mockeados como valor por defecto aquí
-  initialMessages = DEMO_MESSAGES, 
-  scenarioTitle = "Entrevista Frontend Sr.", 
+  //initialMessages = DEMO_MESSAGES, 
+  scenarioTitle = "Conversacion", 
   scenarioAvatar = "👨‍💻" 
 }: ConversationViewerProps) => {
   const navigate = useNavigate();
   
-
-  const id = 2
-const { data: sessionData, isLoading, error } = useQuery({
+  const { id } = useParams();   // <-- captar ID
+  const { data: sessionData, isLoading, error } = useQuery({
     queryKey: ['user_sessions', id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_sessions')
-        .select('*') // Asegúrate de que esto traiga la columna de los mensajes
-        .eq('id', String(id))
+        .select('*')
+        .eq('id', id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    // Solo ejecuta si hay ID en la URL. 
-    enabled: !!id, 
+    enabled: !!id,
   });
-// sessionData se va a renderizar en el front
-// id viene de useParams
 
-  const [messages] = useState<Message[]>(initialMessages);
-  
+
+  const messages = Array.isArray(sessionData?.messages)
+      //? (sessionData.messages as Json[])
+      ? (sessionData.messages as unknown as Message[])
+      : [];
   // Hook de voz (asumiendo que existe en tu proyecto)
   const { 
     isSpeaking, 
@@ -112,7 +115,9 @@ const { data: sessionData, isLoading, error } = useQuery({
 
               <div className="flex flex-col">
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                  {scenarioTitle}
+                  {
+                     getChatTitle(sessionData?.scenario_type || "") || scenarioTitle
+                  }
                 </h1>
                 <span className="text-sm text-muted-foreground">
                   {messages.length} mensajes intercambiados
