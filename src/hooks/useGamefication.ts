@@ -51,11 +51,12 @@ export const useGamefication = () => {
 
       console.log("Generated short description:", shortDescription);
 
-      // Preparar el objeto de feedback para guardar en el JSON
+      /*
       const feedbackJson = {
         recommendations: sessionData.recommendations || [],
         timing_score: sessionData.timingScore || 0
       };
+      */
 
       const description = `Sesión de ${sessionData.scenarioType} guardada automáticamente`;
       // Save session record
@@ -70,13 +71,14 @@ export const useGamefication = () => {
           duration_seconds: sessionData.durationSeconds,
           xp_earned: xpEarned,
 
-          /*
+          ///*
           // Nuevos campos
           title: sessionData.title || sessionData.scenarioType,
           description,
           messages: sessionData.messages, // importante para ver chats antiguos
-          feedback: feedbackJson
-          */
+          recommendations: sessionData.recommendations || [],
+          timing_score: sessionData.timingScore || 0
+          //*/
         });
 
       if (sessionError) throw sessionError;

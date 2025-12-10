@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useConversation } from "@elevenlabs/react";
+import { send } from "process";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,6 +85,8 @@ const Simulacion = () => {
   const scenario = scenarioData[tipo as keyof typeof scenarioData];
   const speakRef = useRef<(text: string) => void>(() => { });
 
+  const [elevenLabsMicMuted, setElevenLabsMicMuted] = useState(true);
+
   const {
     status,
     sendUserMessage: sendMessage,
@@ -92,10 +95,12 @@ const Simulacion = () => {
     startSession,
     //stopSession,
     endSession: endSession,
+    micMuted,
     //audio
   } = useConversation({
+    micMuted: elevenLabsMicMuted,
     onMessage: (msg) => {
-      if (msg.source === "ai") {
+      if (msg.source === "ai") { 
         setMessages((prev) => [...prev, { role: "ai", text: msg.message }]);
         setResponseIndex((prev) => prev + 1);
 
@@ -106,6 +111,7 @@ const Simulacion = () => {
           const sound = new Audio(url);
           sound.play();
         }
+
         /*
         // Speak the AI response
         if (speakRef.current) {
@@ -113,11 +119,9 @@ const Simulacion = () => {
         }
         */
       }
-      if (msg.source === "user") {
-        handleUserTranscript(msg.message);
-      }
     },
   });
+
 
   useEffect(() => {
     const savedSubtitles = localStorage.getItem("subtitles") !== "false";
@@ -127,8 +131,6 @@ const Simulacion = () => {
   const handleUserTranscript = useCallback(
     async (text: string, metrics?: AudioMetrics) => {
       if (!text.trim()) return;
-
-      console.log(text);
 
       // Calculate response time
       const responseTime = aiFinishTimeRef.current > 0 ? Date.now() - aiFinishTimeRef.current : 0;
@@ -160,6 +162,7 @@ const Simulacion = () => {
         console.log("========================");
       }
 
+      /*
       try {
         // Get AI response from Groq
         const allMessages = [...messages, newUserMessage].map((msg) => ({
@@ -201,6 +204,7 @@ const Simulacion = () => {
         // Remove the optimistic message
         setMessages((prev) => prev.slice(0, -1));
       }
+      */
     },
     [messages, tipo],
   );
@@ -253,19 +257,23 @@ const Simulacion = () => {
   const [hasStarted, setHasStarted] = useState(false);
 
   const agentIdByScenario: { [key: string]: string } = {
-    entrevista: "agent_0701kb0eptdyebnsvs72wcpdy7nv",
+    entrevista: "agent_6201kbk09teffvgth6yqbsc6qe0s",
     //entrevista: "agent_3001kazqvrppejmaazabtnj6vv87",
-    casual: "agent_1801kb0ezy2aeebb1ahwx3txtn3y",
-    presentacion: "agent_8101kb0f45ysefz979b6c9khy4pv",
+    casual: "agent_4501kbk0dergefs9k5d13c3sw9ec",
+    //cual: "agent_3601kbjzsz0cf2g9sjq7ajnpypyw",
+    presentacion: "agent_6801kbk0hk9vfgetkh6wch4nj2ca"
+    //gent_8101kb0f45ysefz979b6c9khy4pv",
   };
   const handleStart = () => {
     setHasStarted(true);
-
-    startSession({
-      // Aca hay que poner un agente diferente
-      agentId: agentIdByScenario[tipo as keyof typeof agentIdByScenario],
-      connectionType: "websocket",
-    });
+    
+    startSession(
+      {
+        // Aca hay que poner un agente diferente
+        agentId: agentIdByScenario[tipo as keyof typeof agentIdByScenario],
+        connectionType: 'websocket',
+      }
+    );
     /*
     setTimeout(() => {
       speak(scenario.initialMessage);
@@ -286,8 +294,10 @@ const Simulacion = () => {
 
   const handleToggleListening = () => {
     if (isListening) {
+      setElevenLabsMicMuted(true);
       stopListening();
     } else {
+      setElevenLabsMicMuted(false);
       stopSpeaking();
       startListening();
     }
@@ -377,6 +387,7 @@ const Simulacion = () => {
 
       toast.dismiss();
 
+      
       if (user) {
         // Save session and check achievements
         const { xpEarned, newAchievements } = await saveSession({
@@ -416,6 +427,7 @@ const Simulacion = () => {
       console.error("Error finishing session:", error);
       toast.error("Error al finalizar la sesión");
     }
+    
   };
 
   if (!hasStarted) {
@@ -557,6 +569,7 @@ const Simulacion = () => {
             </div>
 
             {/* Mensaje inicial */}
+            {/*
             <div
               className="flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
               role="article"
@@ -574,6 +587,7 @@ const Simulacion = () => {
                 )}
               </div>
             </div>
+            */}
 
             {/* Transcripción en tiempo real */}
             {isListening && transcript && (
@@ -730,6 +744,38 @@ const Simulacion = () => {
                 <Send className="w-5 h-5" aria-hidden="true" />
               </Button>
             </div>
+          </div>
+
+          <div className="flex gap-4" role="group" aria-label="Controles de la conversación">
+            <Button
+              onClick={handleToggleListening}
+              disabled={isSpeaking || !isSupported}
+              className={`flex-1 h-14 text-lg shadow-soft hover:shadow-medium transition-all ${
+                isListening ? "bg-destructive hover:bg-destructive/90" : "bg-gradient-hero"
+              }`}
+              aria-label={isListening ? "Detener grabación de voz" : "Iniciar grabación de voz"}
+              aria-pressed={isListening}
+            >
+              {isListening ? (
+                <>
+                  <MicOff className="w-5 h-5 mr-2 animate-pulse" aria-hidden="true" />
+                  Detener
+                </>
+              ) : (
+                <>
+                  <Mic className="w-5 h-5 mr-2" aria-hidden="true" />
+                  Hablar
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handleFinish}
+              variant="outline"
+              className="h-14 px-8 text-lg border-2 hover:bg-secondary/50"
+              aria-label="Finalizar sesión y ver resultados"
+            >
+              Finalizar
+            </Button>
           </div>
         </div>
         <AlertDialog>
